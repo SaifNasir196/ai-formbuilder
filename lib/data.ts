@@ -5,7 +5,7 @@ export const navLinks = [
     {
         name: "My Forms",
         icon: React.createElement(LibraryBig),
-        path: "/forms"
+        path: "/"
     },
     {
         name: "Responses",

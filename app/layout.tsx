@@ -26,7 +26,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" data-theme="light">
         <body className={`${inter.className}`}>
-          {/* <Header loggedIn={true} /> */}
+          <Header loggedIn={true} />
           {children}
         </body>
       </html>
