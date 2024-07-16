@@ -4,22 +4,18 @@ import React from 'react'
 export const navLinks = [
     {
         name: "My Forms",
-        icon: React.createElement(LibraryBig),
-        path: "/"
+        path: "/forms"
     },
     {
         name: "Responses",
-        icon: React.createElement(MessagesSquare),
         path: "/responses"
     },
     {
         name: "Analytics",
-        icon: React.createElement(LineChart),
         path: "/analytics"
     },
     {
         name: "Pricing",
-        icon: React.createElement(Shield),
         path: "/pricing"
     },
 ] as const

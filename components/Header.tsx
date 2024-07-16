@@ -9,6 +9,7 @@ import { navLinks } from '@/lib/data'
 import { cn } from '@/lib/utils'
 import { SignInButton } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
+import CreateForm from './CreateForm'
 
 const Header = ({ loggedIn }: { loggedIn: boolean }) => {
   const path = usePathname()
@@ -54,7 +55,8 @@ const Header = ({ loggedIn }: { loggedIn: boolean }) => {
           </ul>
         </nav>
 
-        <div className="navbar-end">
+        <div className="navbar-end gap-10">
+          <CreateForm />
           <UserButton />        
         </div>
       </>
