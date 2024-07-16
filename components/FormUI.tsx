@@ -1,27 +1,38 @@
 import React from 'react'
 import { jsonformType } from '@/lib/type'
-import { FileEdit } from 'lucide-react'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
+import FieldOptions from './FieldOptions'
+import { editFieldType } from '@/lib/type'
 
-const FormUI = ({ form }: {form: jsonformType | undefined}) => {
+
+const FormUI = ({ form, onFieldUpdate }: { form: jsonformType | undefined, onFieldUpdate: (value: editFieldType, index: number)=>void}) => {
+  
   return (
-    <article className='border p-5'>
+    <article className='border p-5 rounded-2xl shadow-sm'>
       <h2 className='font-bold text-center text-2xl text-primary'> {form?.formTitle} </h2>
       <h3 className='text-sm text-gray-400 text-center'> {form?.formHeading} </h3>
 
       {
         form?.fields.map((field, index) => (
-          <div key={index} className='my-5'>
-            <Label htmlFor={field.fieldName}> {field.label} </Label>
-            <Input 
-              id={field.fieldName} 
-              name={field.fieldName} 
-              type={field.fieldType} 
-              placeholder={field.placeholder} 
-              required={field.required} 
-            />
-          </div>
+            <div className='flex items-center  gap-2'>
+              {/* field */}
+              <div key={index} className='my-5 flex-grow'>
+                <Label htmlFor={field.fieldName}> {field.label} </Label>
+                <Input 
+                  id={field.fieldName} 
+                  name={field.fieldName} 
+                  type={field.fieldType} 
+                  placeholder={field.placeholder} 
+                  required={field.required} 
+                  className='w-full '
+                />
+              </div>
+
+              <FieldOptions defaultValue={field} onUpdate={(value) => onFieldUpdate(value, index)}/>
+
+              
+            </div>
         ))
       }
       
