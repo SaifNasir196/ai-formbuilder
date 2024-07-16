@@ -6,10 +6,18 @@ import FieldOptions from './FieldOptions'
 import { editFieldType } from '@/lib/type'
 
 
-const FormUI = ({ form, onFieldUpdate }: { form: jsonformType | undefined, onFieldUpdate: (value: editFieldType, index: number)=>void}) => {
+const FormUI = ({
+  form,
+  onFieldUpdate,
+  onFieldDelete
+}: {
+  form: jsonformType | undefined,
+  onFieldUpdate: (value: editFieldType, index: number) => void,
+  onFieldDelete: (index: number) => void
+}) => {
   
   return (
-    <article className='border p-5 rounded-2xl shadow-sm'>
+    <article className='border p-5 rounded-2xl shadow-sm w-3/4 xl:w-1/2 h-fit'>
       <h2 className='font-bold text-center text-2xl text-primary'> {form?.formTitle} </h2>
       <h3 className='text-sm text-gray-400 text-center'> {form?.formHeading} </h3>
 
@@ -25,11 +33,11 @@ const FormUI = ({ form, onFieldUpdate }: { form: jsonformType | undefined, onFie
                   type={field.fieldType} 
                   placeholder={field.placeholder} 
                   required={field.required} 
-                  className='w-full '
+                  className='w-full'
                 />
               </div>
 
-              <FieldOptions defaultValue={field} onUpdate={(value) => onFieldUpdate(value, index)}/>
+              <FieldOptions defaultValue={field} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={()=> onFieldDelete(index)}/>
 
               
             </div>

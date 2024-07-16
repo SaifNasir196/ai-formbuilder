@@ -1,16 +1,40 @@
 import React, { useRef } from 'react'
 import { Edit, Trash } from 'lucide-react'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
-import { Button } from './ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
 import { fieldType, editFieldType  } from '@/lib/type'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/components/ui/use-toast"
 
-const FieldOptions = ({ defaultValue, onUpdate }: {defaultValue: fieldType , onUpdate: (arg0: editFieldType) => void  }) => {
+
+
+const FieldOptions = ({ 
+    defaultValue,
+    onUpdate,
+    onDelete
+}:{ 
+    defaultValue: fieldType,
+    onUpdate: (value: editFieldType) => void,
+    onDelete: () => void,
+}) => {
     const label = useRef<HTMLInputElement>(null)
     const placeholder = useRef<HTMLInputElement>(null)
+    const { toast } = useToast()
+
     return (
-        <div className="">
+        <div className="mt-7 ">
 
             <Popover>
                 <PopoverTrigger>
@@ -43,16 +67,48 @@ const FieldOptions = ({ defaultValue, onUpdate }: {defaultValue: fieldType , onU
                     </div>
                     <Button
                         className='mt-2'
-                        onClick={() => onUpdate({
-                            label: label.current?.value || '',
-                            placeholder: placeholder.current?.value || ''
-                        })}
+                        onClick={() => {
+                            onUpdate({
+                                label: label.current?.value || '',
+                                placeholder: placeholder.current?.value || ''
+                            })
+                            toast({
+                                title: "Field Updated Successfully",
+                                variant: 'success'
+                            })
+                        }}
                     >
                         Update
                     </Button>
                     </PopoverContent>
                 </Popover>
-                <Trash className='h-5 w-5 text-red-500'/>
+
+
+                <AlertDialog>
+                <AlertDialogTrigger>
+                    <Trash className='h-5 w-5 text-red-500'/>
+                </AlertDialogTrigger>
+
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your form and all its data.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                        toast({
+                            title: "Field Deleted Successfully",
+                            variant: 'destructive'
+                        })
+                        onDelete()
+                        }}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+                </AlertDialog>
+
         </div>
     )
 }
