@@ -26,8 +26,7 @@ import { db } from '@/config'
 import { forms } from '@/config/schema'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-
-const PROMPT = ". based on the previous sentence create a json string of format with formTitle, formHeading, along with fieldName, fieldTitle, fieldType, placeholder, label, required fields. make sure to not include the json markup (```json), only give the string, only give json content and nothing else.";
+import { PROMPT } from '@/lib/data'
 
 const CreateForm = () => {
     const ref = useRef<HTMLTextAreaElement>(null)
