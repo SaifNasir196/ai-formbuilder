@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionType } from "./type";
 
 export const navLinks = [
     {
@@ -19,7 +20,38 @@ export const navLinks = [
     },
 ] as const
 
-export const PROMPT = ". based on the previous sentence create a json string of format with formTitle, formHeading, along with fieldName, fieldTitle, fieldType, placeholder, label, required fields. make sure to not include the json markup (```json), only give the string, only give json content and nothing else." as const;
+export const PROMPT = `
+. based on the previous sentence create a json string of format FormDataSchema: z.ZodObject<{
+    formTitle: z.ZodString;
+    formHeading: z.ZodString;
+    fields: z.ZodArray<z.ZodObject<{
+        fieldName: z.ZodString;
+        fieldType: z.ZodString;
+        label: z.ZodString;
+        placeholder: z.ZodOptional<z.ZodString>;
+        min: z.ZodOptional<...>;
+        max: z.ZodOptional<...>;
+        max: z.ZodOptional<...>;
+        required: z.ZodOptional<...>;
+        options: z.ZodOptional<...>;
+    }>>;
+
+    and
+    optionSchema = z.object({
+        label: z.string(),
+        value: z.string()
+    });
+
+}>
+. There are 10 types of fields in the form, email, string, number, tel, url, date, checkbox, radio, select, file.
+make sure to not include the json markup (\`\`\`json), only give the string, only give json content and nothing else.
+` as const;
+
+
+export const optionSchema = z.object({
+    label: z.string(),
+    value: z.string()
+});
 
 // Predefined validation functions
 export const validations = {
@@ -28,10 +60,10 @@ export const validations = {
         return required ? schema.min(1, { message: "Email is required" }) : schema.optional();
     },
 
-    string: (required = false, minLength = 0, maxLength = 255) => {
+    string: (required = false, min = 0, max = 255) => {
         let schema = z.string()
-        .min(minLength, { message: `Minimum length must be ${minLength}` })
-        .max(maxLength, { message: `Maximum length is ${maxLength}` });
+        .min(min, { message: `Minimum length must be ${min}` })
+        .max(max, { message: `Maximum length is ${max}` });
         return required ? schema.min(1, { message: "This field is required" }) : schema.optional();
     },
 
@@ -39,7 +71,7 @@ export const validations = {
         let schema = z.number();
         if (min !== undefined) schema = schema.min(min, { message: `Minimum value is ${min}` });
         if (max !== undefined) schema = schema.max(max, { message: `Maximum value is ${max}` });
-        return required ? schema : schema.optional();
+        return required ? schema.min(1, { message: "This field is required" }) : schema.optional();
     },
 
     tel: (required = false, message = "Invalid phone number") => {
@@ -53,26 +85,28 @@ export const validations = {
     },
 
     date: (required = false, message = "Invalid date format (YYYY-MM-DD)") => {
-        let schema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message });
-        return required ? schema.min(1, { message: "Date is required" }) : schema.optional();
+        // let schema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message });
+        // return required ? schema.min(1, { message: "Date is required" }) : schema.optional();
+        // use z.date() instead of regex
+        let schema = z.date();
+        return required ? schema : schema.optional();
     },
 
-    time: (required = false, message = "Invalid time format (HH:MM)") => {
-        let schema = z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message });
-        return required ? schema.min(1, { message: "Time is required" }) : schema.optional();
-    },
 
     checkbox: (required = false) => {
         let schema = z.boolean();
         return required ? schema : schema.optional();
     },
-    radio: (options: string[], required = false) => {
-        let schema = z.enum(options as [string, ...string[]]);
+    radio: (options: optionType[], required = false) => {
+        console.log('Options:', options);
+        const values = options.map(option => option.value);
+        let schema = z.enum(values as [string, ...string[]]);
         return required ? schema : schema.optional();
     },
 
-    select: (options: string[], required = false) => {
-        let schema = z.enum(options as [string, ...string[]]);
+    select: (options: optionType[], required = false) => {
+        const values = options.map(option => option.value);
+        let schema = z.enum(values as [string, ...string[]]);
         return required ? schema : schema.optional();
     },
 
@@ -91,8 +125,11 @@ export const FieldSchema = z.object({
   min: z.number().optional(),
   max: z.number().optional(),
   required: z.boolean().optional(),
-  options: z.array(z.string()).optional()
+  options: z.array(optionSchema).optional()
 });
+
+
+
 
 // Define the structure of your form data
 export const FormDataSchema = z.object({

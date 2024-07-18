@@ -34,7 +34,7 @@ const FieldOptions = ({
     const { toast } = useToast()
 
     return (
-        <div className="mt-7 ">
+        <div className="mt-7 flex gap-1">
 
             <Popover>
                 <PopoverTrigger>

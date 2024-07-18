@@ -8,14 +8,14 @@ import { useUser } from '@clerk/nextjs'
 import { Share2Icon, SquareArrowOutUpRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
-import { jsonformType, editFieldType } from '@/lib/type'
+import { editFieldType, FormData } from '@/lib/type'
 import { Button } from '@/components/ui/button'
 
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
   const { user } = useUser()
   const router = useRouter()
-  const [jsonform, setJsonform] = useState<jsonformType | undefined>(undefined)
+  const [jsonform, setJsonform] = useState<FormData | undefined>(undefined)
   const [updateTrigger, setUpdateTrigger] = useState(false)
 
   useEffect(() => {
@@ -67,13 +67,11 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
 
   
   const onFieldDelete = (index: number) => {
-    console.log('jsonform before:', jsonform);
+    // console.log('jsonform before:', jsonform);
 
     setJsonform(prevJsonform => {
       const updatedFields = prevJsonform?.fields.filter((_, i) => i !== index);
-      const updatedJsonform = { ...prevJsonform, fields: updatedFields } as jsonformType;
-      
-      
+      const updatedJsonform = { ...prevJsonform, fields: updatedFields } as FormData;
       return updatedJsonform;
     });
     setUpdateTrigger(true);
@@ -94,7 +92,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
           controller
         </div>
 
-        <div className="md:col-span-3 border rounded-lg px-10 pt-48 h-screen shadow-md flex justify-center">
+        <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
           <FormUI form={jsonform} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
         </div>
 
