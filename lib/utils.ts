@@ -4,12 +4,8 @@ import { validations } from "@/lib/data";
 import { FormData, fieldType } from "@/lib/type";
 import { z } from "zod";
 import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
-import dotenv from 'dotenv';
-import path from 'path';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
