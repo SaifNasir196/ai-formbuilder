@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
 import { editFieldType, FormData } from '@/lib/type'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
@@ -20,6 +21,8 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
 
   useEffect(() => {
     user && getFormData()
+    console.log('jsonform', jsonform);
+
   }, [user])
 
   useEffect(() => {
@@ -34,6 +37,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
     console.log('Getting form data');
     const response = await db.select().from(forms)
       .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
+    console.log('response', response[0]);
     setJsonform(JSON.parse(response[0].jsonform));
   }
 
@@ -78,11 +82,12 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
   }
 
   
-
   return (
     <section className='p-10'>
       <div className="flex gap-3 justify-end my-3">
-        <Button variant="secondary"> <SquareArrowOutUpRight size={20} className='mr-2'/>Preview</Button>
+        <Link href={`/form/${params.formId}`}>
+          <Button variant="secondary"> <SquareArrowOutUpRight size={20} className='mr-2'/>Preview</Button>
+        </Link>
         <Button> <Share2Icon size={20} className='mr-2'/> Share</Button>
 
       </div>

@@ -43,8 +43,8 @@ export const PROMPT = `
     });
 
 }>
-. There are 10 types of fields in the form, email, string, number, tel, url, date, checkbox, radio, select, file.
-make sure to not include the json markup (\`\`\`json), only give the string, only give json content and nothing else.
+. There are 11 types of fields in the form, email, string, number, tel, url, date, select, checkbox (for multi select), radio, select, file, switch.
+make sure to not include the json markup (\`\`\`json), only give the stringfied version, only give json content and nothing else.
 ` as const;
 
 
@@ -110,10 +110,17 @@ export const validations = {
         return required ? schema : schema.optional();
     },
 
+    // this is for terms and conditions
+    switch: (required = false) => {
+        let schema = z.boolean();
+        return required ? schema : schema.optional();
+    },
+
     file: (required = false) => {
         let schema = z.instanceof(File);
         return required ? schema : schema.optional();
     },
+
 }
 
 // Define the structure of your field

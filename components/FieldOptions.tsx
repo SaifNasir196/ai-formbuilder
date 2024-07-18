@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
+import { usePathname } from 'next/navigation'
 
 
 
@@ -32,10 +33,13 @@ const FieldOptions = ({
     const label = useRef<HTMLInputElement>(null)
     const placeholder = useRef<HTMLInputElement>(null)
     const { toast } = useToast()
+    const path = usePathname()
 
     return (
+        path.includes('/form') ? (
+            <div className=""></div>
+        ) : (
         <div className="mt-7 flex gap-1">
-
             <Popover>
                 <PopoverTrigger>
                     <Edit className='h-5 w-5 text-gray-500'/>
@@ -110,7 +114,9 @@ const FieldOptions = ({
                 </AlertDialog>
 
         </div>
+        )
     )
+
 }
 
 export default FieldOptions

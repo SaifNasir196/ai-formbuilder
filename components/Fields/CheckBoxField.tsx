@@ -35,9 +35,10 @@ const CheckBoxField = ({
         control={control}
         name={fieldData.fieldName}
         render={() => (
+        <div className='flex my-6'>
         <FormItem>
             <div className="mb-4">
-            <FormLabel className="text-base">{fieldData.label}</FormLabel>
+            <FormLabel>{fieldData.label}</FormLabel>
             <FormDescription> Select all that apply </FormDescription>
             </div>
             {fieldData?.options?.map((option, optionIndex) => (
@@ -49,7 +50,7 @@ const CheckBoxField = ({
                 return (
                     <FormItem
                         key={optionIndex}
-                        className="flex flex-row items-start space-x-3 space-y-0"
+                        className="flex flex-row items-center space-x-3 space-y-0"
                     >
                     <FormControl>
                         <Checkbox
@@ -71,7 +72,11 @@ const CheckBoxField = ({
             ))}
             <FormMessage />
         </FormItem>
+        
+        <FieldOptions defaultValue={fieldData} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={()=> onFieldDelete(index)}/>
+        </div>
         )}
+
     />
   )
 }

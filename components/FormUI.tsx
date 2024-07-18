@@ -12,6 +12,8 @@ import StringField from './Fields/StringField'
 import RadioField from './Fields/RadioField'
 import SelectField from './Fields/SelectField'
 import CheckBoxField from './Fields/CheckBoxField'
+import SwitchField from './Fields/SwitchField'
+import { Button } from './ui/button'
 
 
 
@@ -39,7 +41,7 @@ const FormUI = ({
 
   return (
     <article className='border p-5 rounded-2xl shadow-sm w-3/4 xl:w-1/2 h-fit'>
-      {JSON.stringify(form)}
+      {/* {JSON.stringify(form)} */}
       <h2 className='font-bold text-center text-2xl text-primary'> {form?.formTitle} </h2>
       <h3 className='text-sm text-gray-400 text-center'> {form?.formHeading} </h3>
       
@@ -74,7 +76,21 @@ const FormUI = ({
                     onFieldDelete={onFieldDelete}
                   />
                 ) : field.fieldType === 'checkbox' ? (
-                  <CheckBoxField control={formObject.control} fieldData={field} index={index} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
+                  <CheckBoxField
+                    control={formObject.control}
+                    fieldData={field}
+                    index={index}
+                    onFieldUpdate={onFieldUpdate}
+                    onFieldDelete={onFieldDelete}
+                  />
+                ) : field.fieldType === 'switch' ? (
+                  <SwitchField
+                    control={formObject.control}
+                    fieldData={field}
+                    index={index}
+                    onFieldUpdate={onFieldUpdate}
+                    onFieldDelete={onFieldDelete}
+                  />
                 ) : (
                   <>
 
@@ -103,6 +119,8 @@ const FormUI = ({
           }
 
         </form>
+
+        <Button className='w-full mt-16' type='submit'> Submit </Button>
       </Form>
 
       

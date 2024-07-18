@@ -13,7 +13,7 @@ import CreateForm from './CreateForm'
 
 const Header = ({ loggedIn }: { loggedIn: boolean }) => {
   const path = usePathname()
-  return (
+  if (!path.includes('/form')) return (
     <header className="navbar bg-base-100 w-full border-b drop-shadow-md">
       <div className="navbar-start">
           <Link href="/" className="cursor-pointer ">
