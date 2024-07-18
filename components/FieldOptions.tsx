@@ -19,8 +19,6 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { usePathname } from 'next/navigation'
 
-
-
 const FieldOptions = ({ 
     defaultValue,
     onUpdate,

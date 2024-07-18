@@ -3,11 +3,90 @@ import { twMerge } from "tailwind-merge"
 import { validations } from "@/lib/data";
 import { FormData, fieldType } from "@/lib/type";
 import { z } from "zod";
+import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
 
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export const model = genAI.getGenerativeModel({ 
+  model: "gemini-1.5-flash",
+  generationConfig: {
+    temperature: 1,
+    topP: 0.95,
+    topK: 64,
+    maxOutputTokens: 8192,
+    responseMimeType: "application/json",
+  },
+});
+
+// let model = genAI.getGenerativeModel({
+//   model: "gemini-1.5-pro",
+//   generationConfig: {
+//     responseMimeType: "application/json",
+//     responseSchema: {
+//       type: FunctionDeclarationSchemaType.OBJECT,
+//       properties: {
+//         formTitle: {
+//           type: FunctionDeclarationSchemaType.STRING,
+//         },
+//         formHeading: {
+//           type: FunctionDeclarationSchemaType.STRING,
+//         },
+//         fields: {
+//           type: FunctionDeclarationSchemaType.ARRAY,
+//           items: {
+//             type: FunctionDeclarationSchemaType.OBJECT,
+//             properties: {
+//               fieldName: {
+//                 type: FunctionDeclarationSchemaType.STRING,
+//               },
+//               fieldType: {
+//                 type: FunctionDeclarationSchemaType.STRING,
+//               },
+//               label: {
+//                 type: FunctionDeclarationSchemaType.STRING,
+//               },
+//               placeholder: {
+//                 type: FunctionDeclarationSchemaType.STRING,
+//                 optional: true,
+//               },
+//               min: {
+//                 type: FunctionDeclarationSchemaType.NUMBER,
+//                 optional: true,
+//               },
+//               max: {
+//                 type: FunctionDeclarationSchemaType.NUMBER,
+//                 optional: true,
+//               },
+//               required: {
+//                 type: FunctionDeclarationSchemaType.BOOLEAN,
+//                 optional: true,
+//               },
+//               options: {
+//                 type: FunctionDeclarationSchemaType.ARRAY,
+//                 optional: true,
+//                 items: {
+//                   type: FunctionDeclarationSchemaType.OBJECT,
+//                   properties: {
+//                     label: {
+//                       type: FunctionDeclarationSchemaType.STRING,
+//                     },
+//                     value: {
+//                       type: FunctionDeclarationSchemaType.STRING,
+//                     },
+//                   },
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       },
+//     },
+//   }
+// });
 
 
 export const createDynamicSchema = (jsonData: FormData | undefined) => {

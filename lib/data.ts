@@ -43,8 +43,8 @@ export const PROMPT = `
     });
 
 }>
-. There are 11 types of fields in the form, email, string, number, tel, url, date, select, checkbox (for multi select), radio, select, file, switch.
-make sure to not include the json markup (\`\`\`json), only give the stringfied version, only give json content and nothing else.
+. There are 11 types of fields in the form, email, string, number, tel, url, date, select, checkbox (for multi select), radio, select, file, switch. 
+  Give a parseable string, only give json content and nothing else.
 ` as const;
 
 
