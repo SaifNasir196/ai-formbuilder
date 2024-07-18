@@ -17,7 +17,7 @@ const Hero = () => {
 
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
                     <Button className='py-6 px-8'>
-                        <Link href="/signup">Get Started</Link>
+                        <Link href="/sign-in">Get Started</Link>
                     </Button>
                     <Button variant="outline" className='py-6 px-8'>
                         <Link href="/">Learn More</Link>

@@ -33,6 +33,8 @@ const CreateForm = () => {
     const [loading, setLoading] = useState(false);
     const { user } = useUser();
     const router = useRouter();
+    const closeRef = useRef<HTMLButtonElement>(null)
+
 
     const handleSubmit = async () => {
         if (ref.current) {
@@ -70,6 +72,8 @@ const CreateForm = () => {
                 if ( !res[0].id && res.length === 0) {
                     throw new Error("Failed to create form");
                 }
+
+                closeRef.current?.click();
                 router.push(`/edit-form/${res[0].id}`);
 
                 
@@ -105,12 +109,12 @@ const CreateForm = () => {
                 <DialogHeader >
                     <DialogTitle>Create New Form</DialogTitle>
                     <DialogDescription>
-                        <Textarea className='my-4' ref={ref} placeholder="Type your message here." />
+                        <Textarea className='my-4' ref={ref} placeholder="Create a form for my career's workshop. Oh and ask for their field, thanks!" />
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="sm:justify-end">
-                <DialogClose asChild>
-                    <Button type="button" variant="secondary" className='w-24'>
+                <DialogClose asChild >
+                    <Button type="button" variant="secondary" className='w-24' ref={closeRef}>
                     Close
                     </Button>
                 </DialogClose>
