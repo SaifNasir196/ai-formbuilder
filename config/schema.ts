@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, varchar, timestamp } from "drizzle-orm/pg-core";
 
 
 export const forms = pgTable('forms', {
@@ -8,6 +8,15 @@ export const forms = pgTable('forms', {
     createdAt: timestamp('createdAt').notNull(),
 })
 
+export const responses = pgTable('responses', {
+    id: serial('id').primaryKey(),
+    formId: integer('formId').references(() => forms.id).notNull(), // FK to forms.id
+    response: text('response').notNull(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+    createdBy: varchar('createdBy').default("Anonymous"),
+})
 
-export const schema = { forms };
+
+
+export const schema = { forms, responses };
 

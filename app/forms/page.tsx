@@ -1,11 +1,12 @@
-import Hero from "@/components/Hero";
-import Image from "next/image";
+import FormList from '@/components/FormList'
+import React from 'react'
 
-export default function Home() {
+const page = () => {
   return (
-    <main className="">
-      forms
-
-    </main>
-  );
+    <section className='px-20 py-20'>
+      <FormList />
+    </section>
+  )
 }
+
+export default page

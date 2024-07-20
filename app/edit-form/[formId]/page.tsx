@@ -5,24 +5,36 @@ import { forms } from '@/config/schema'
 import { and, eq } from 'drizzle-orm'
 import React, { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Share2Icon, SquareArrowOutUpRight } from 'lucide-react'
+import { Trash, Share, SquareArrowOutUpRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
-import { editFieldType, FormData } from '@/lib/type'
+import { editFieldType, FormDataType } from '@/lib/type'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import useCopyToClipboard from '@/app/hooks/useCopyToClipboard'
+
 
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
   const { user } = useUser()
   const router = useRouter()
-  const [jsonform, setJsonform] = useState<FormData | undefined>(undefined)
+  const [jsonform, setJsonform] = useState<FormDataType | undefined>(undefined)
   const [updateTrigger, setUpdateTrigger] = useState(false)
+  const { isCopied, copyToClipboard } = useCopyToClipboard()
 
   useEffect(() => {
     user && getFormData()
-    console.log('jsonform', jsonform);
-
   }, [user])
 
   useEffect(() => {
@@ -34,10 +46,8 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
   
 
   const getFormData = async () => {
-    console.log('Getting form data');
     const response = await db.select().from(forms)
       .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
-    console.log('response', response[0]);
     setJsonform(JSON.parse(response[0].jsonform));
   }
 
@@ -51,14 +61,10 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
       } catch (error) {
         console.error('Error updating DB:', error);
       }
-    } else {
-      console.log('jsonform is undefined, skipping DB update');
     }
-
   }
 
   const onFieldUpdate = (value: editFieldType, index: number) => {
-    console.log('Updating form');
     if (!jsonform?.fields[index].label) {
       throw new Error('Field label is missing')
     }
@@ -71,24 +77,57 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
 
   
   const onFieldDelete = (index: number) => {
-    // console.log('jsonform before:', jsonform);
-
     setJsonform(prevJsonform => {
       const updatedFields = prevJsonform?.fields.filter((_, i) => i !== index);
-      const updatedJsonform = { ...prevJsonform, fields: updatedFields } as FormData;
+      const updatedJsonform = { ...prevJsonform, fields: updatedFields } as FormDataType;
       return updatedJsonform;
     });
     setUpdateTrigger(true);
+  }
+  const onFormDelete = async () => {
+    try {
+      await db.delete(forms)
+        .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
+      router.push('/forms');
+    } catch (error) {
+      console.error('Error deleting form:', error);
+    }
   }
 
   
   return (
     <section className='p-10'>
       <div className="flex gap-3 justify-end my-3">
+        <AlertDialog>
+        <AlertDialogTrigger><Button variant="destructive"><Trash size={18} onClick={() => onFormDelete()}/></Button></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your form
+              and all responses to it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+        </AlertDialog>
+
         <Link href={`/form/${params.formId}`}>
           <Button variant="secondary"> <SquareArrowOutUpRight size={20} className='mr-2'/>Preview</Button>
         </Link>
-        <Button> <Share2Icon size={20} className='mr-2'/> Share</Button>
+
+        <Button onClick={() => copyToClipboard(`/form/${params.formId}`)}>
+        {isCopied ? (
+          'Copied'
+        ) : (
+          <p><Share size={20} className='mr-2'/> Share </p>
+        )}
+
+          
+        </Button>
 
       </div>
 
@@ -98,7 +137,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
         </div>
 
         <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
-          <FormUI form={jsonform} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
+          <FormUI formId={params.formId} form={jsonform} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
         </div>
 
       </div>

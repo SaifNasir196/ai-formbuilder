@@ -40,6 +40,7 @@ const StringField = ({
                         <FormControl>
                             <Input
                                 placeholder={fieldData.placeholder || ''}
+                                
                                 type={fieldData.fieldType}
                                 required={fieldData.required}
                                 min={fieldData.min || (fieldData.fieldType === 'number' ? Number.MIN_VALUE : 0)}

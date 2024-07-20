@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { validations } from "@/lib/data";
-import { FormData, fieldType } from "@/lib/type";
+import { FormDataType, fieldType } from "@/lib/type";
 import { z } from "zod";
 import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
 
@@ -89,18 +89,13 @@ export const model = genAI.getGenerativeModel({
 // });
 
 
-export const createDynamicSchema = (jsonData: FormData | undefined) => {
-  if (!jsonData) { 
-    return z.object({});
-  }
-
+export const createDynamicSchema = (jsonData: FormDataType | undefined) => {
+  if (!jsonData) return z.object({});
+  
   const schemaFields: Record<string, z.ZodTypeAny> = {};
-
   jsonData.fields.forEach(field => {
     schemaFields[field.fieldName] = createFieldSchema(field);
   });
-  // console.log('Schema:', schemaFields);
-
   return z.object(schemaFields);
 }
 
@@ -133,7 +128,6 @@ const createFieldSchema = (field: fieldType) => {
       if (!field.options || field.options.length === 0 || typeof field.options[0] !== 'object' || typeof field.options[0].value !== 'string' || typeof field.options[0].label !== 'string'){
         throw new Error('Field options are missing'); // If this happens ask user to reenter prompt
       }
-      console.log('Options:', field.options);
       schema = validations[field.fieldType](field.options || [], isRequired);
       break;
     case 'file':
@@ -142,7 +136,33 @@ const createFieldSchema = (field: fieldType) => {
     default:
       schema = validations.string(isRequired, field.min || 0 , field.max || 255);
   }
-  console.log('Field:', field.fieldName, schema._def);
   return schema;
 
+}
+
+export const getDefaultValues = (form: FormDataType) => {
+  return form?.fields.reduce((acc, field) => {
+    switch (field.fieldType) {
+      case 'number':
+        acc[field.fieldName] = '';  // Use empty string for number fields initially
+        break;
+      case 'checkbox':
+      case 'switch':
+        acc[field.fieldName] = false;
+        break;
+      case 'radio':
+      case 'select':
+        acc[field.fieldName] = field.options && field.options.length > 0 ? field.options[0].value : '';
+        break;
+      case 'date':
+        acc[field.fieldName] = '';  // Use empty string for date fields initially
+        break;
+      case 'file':
+        acc[field.fieldName] = null;  // Use null for file fields initially
+        break;
+      default:
+        acc[field.fieldName] = '';
+    }
+    return acc;
+  }, {} as Record<string, any>);
 }

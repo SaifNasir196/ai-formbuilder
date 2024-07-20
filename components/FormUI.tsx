@@ -1,9 +1,9 @@
-import React from 'react'
-import { FormData, editFieldType } from '@/lib/type'
+import React, { useMemo } from 'react'
+import { FormDataType, editFieldType } from '@/lib/type'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import FieldOptions from './FieldOptions'
-import { createDynamicSchema } from '@/lib/utils'
+import { createDynamicSchema, getDefaultValues } from '@/lib/utils'
 import { FieldValues, useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormDataSchema } from '@/lib/data'
@@ -14,28 +14,57 @@ import SelectField from './Fields/SelectField'
 import CheckBoxField from './Fields/CheckBoxField'
 import SwitchField from './Fields/SwitchField'
 import { Button } from './ui/button'
+import { responses } from '@/config/schema'
+import { db } from '@/config'
+import { toast } from './ui/use-toast'
 
 
 
 const FormUI = ({
+  formId,
   form,
   onFieldUpdate,
   onFieldDelete
 }: {
-  form: FormData | undefined,
+  formId: number
+  form: FormDataType | undefined,
   onFieldUpdate: (value: editFieldType, index: number) => void,
   onFieldDelete: (index: number) => void
 }) => {
+  if (!form) return null;
+
+  const defaultValues = useMemo(() => getDefaultValues(form), [form]);
+
   
   const formObject = useForm({
     resolver: zodResolver(createDynamicSchema(form)),
+    defaultValues: defaultValues,
   });
 
   const onSubmit = async (values: FieldValues) => {
     const isValid = await formObject.trigger(Object.keys(FormDataSchema.shape));
-    console.log(isValid);
     if (isValid) {
       console.log(values);
+
+      const res = await db.insert(responses)
+      .values({
+        formId: formId,
+        response: JSON.stringify(values),
+      })
+
+      if (res) {
+        formObject.reset(defaultValues);
+        toast({
+          title: "Response submitted successfully",
+          variant: 'success'
+        })
+      } else {
+        toast({
+          title: "Failed to submit response",
+          variant: 'warning'
+        })
+      }
+
     }
   };
 
@@ -49,7 +78,7 @@ const FormUI = ({
         <form onSubmit={formObject.handleSubmit(onSubmit)}>
           {
             form?.fields.map((field, index) => (
-              <>
+              <React.Fragment key={index}>
               {
                 ['string', 'email', 'number', 'tel', 'url', 'date', 'time'].includes(field.fieldType) ? (
                   <StringField
@@ -92,7 +121,6 @@ const FormUI = ({
                     onFieldDelete={onFieldDelete}
                   />
                 ) : (
-                  <>
 
                   <div className='flex items-center  gap-2' key={index}>
                     {/* field */}
@@ -109,18 +137,15 @@ const FormUI = ({
                     </div>
                     <FieldOptions defaultValue={field} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={()=> onFieldDelete(index)}/>
                   </div>
-                  </>
                 )
               }
-
-
-              </>
+              </React.Fragment>
             ))
           }
 
+        <Button className='w-full mt-16' type='submit'> Submit </Button>
         </form>
 
-        <Button className='w-full mt-16' type='submit'> Submit </Button>
       </Form>
 
       
