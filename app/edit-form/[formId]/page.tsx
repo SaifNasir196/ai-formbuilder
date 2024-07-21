@@ -91,7 +91,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
     <section className='p-10'>
       <div className="flex gap-3 justify-end my-3">
         <AlertDialog>
-          <AlertDialogTrigger>
+          <AlertDialogTrigger asChild>
             <Button variant="destructive"><Trash size={18} /></Button>
           </AlertDialogTrigger>
           <AlertDialogContent>

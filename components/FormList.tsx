@@ -8,6 +8,7 @@ import FormItem from './FormItem'
 import { FormType } from '@/lib/type'
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query';
+import { Button } from './ui/button'
 
 
 const fetchForms = async (): Promise<FormType[]> => {
@@ -15,33 +16,8 @@ const fetchForms = async (): Promise<FormType[]> => {
   return response.data;
 };
 
-const FormList = () => {
+const FormList = ({ query }: { query: string }) => {
     const { isLoaded, isSignedIn, user } = useUser()
-    // const [formList, setFormList] = useState<FormType[]>([])
-
-    // useEffect(() => {
-    //     if (isLoaded && isSignedIn) {
-    //         getFormList()
-    //     }
-    // }, [isLoaded, isSignedIn])
-    
-    // const getFormList = async () => {
-    //     if (!user) return
-
-    //     const primaryEmail = user.primaryEmailAddress?.emailAddress
-    //     if (!primaryEmail) return
-
-    //     try {
-    //         const res = await db.select().from(forms)
-    //             .where(eq(forms.createdBy, primaryEmail))
-    //             .orderBy(desc(forms.id))
-    //         // console.log('res', res)
-    //         setFormList(res)
-    //     } catch (error) {
-    //         console.error('Error fetching form list:', error)
-    //     }
-    // }
-
     const {
         data: formList,
         isLoading,
@@ -65,15 +41,17 @@ const FormList = () => {
     if (isError)
         return <div>Error loading forms: {error.message}</div>;
         
-    console.log('formList', formList);
     if (!formList || formList.length === 0)
         return <div>Create forms and grow your business!</div>
+    
+    const filteredItems = formList.filter((form) => 
+        JSON.parse(form.jsonform).formTitle.toLowerCase().includes(query.toLowerCase()))
 
     return (
-        <div className='mt-24 mx-auto 2xl:mx-56 grid grid-cols-2 lg:grid-cols-3 gap-6'>
-            {formList.map((form, index) => (
+        <div className='mt-20 mx-auto 2xl:mx-56 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 sm: gap-6'>
+            {filteredItems.map((form, index) => (
                 <React.Fragment key={index}>
-                    <FormItem form={form}/>
+                    <FormItem form={form} refreshData={refetch}/>
                 </React.Fragment>
             ))}
         </div>

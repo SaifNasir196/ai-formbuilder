@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from '@/config';
 import { forms } from '@/config/schema'; // Your Drizzle schema
@@ -55,24 +55,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'User email not found' }, { status: 400 });
 
   try {
-    const { message } = await request.json();
+    const { message, duplicated = 0 } = await request.json();
+    let data;
 
-    // send request to Gemini
-    const response = await fetch(process.env.NEXT_PUBLIC_URL + '/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message }),
-    });
+    if (!duplicated) {
+      // send request to Gemini
+      const response = await fetch(process.env.NEXT_PUBLIC_URL + '/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
 
-    if (!response.ok)
+      if (!response.ok)
         throw new Error('Network response was not ok');
 
-    // parse response
-    const data = await response.json();
+      // parse response
+      data = await response.json();
+      data = data?.response;
+      
+    } else {
+      // duplicate is a formId of an existing form
+      // only get the jsonform of the existing form
+      // const data = await db.select().from(forms).where(and(eq(forms.id, duplicated), eq(forms.createdBy ,userEmail)));
+      data = await db.select( {jsonform: forms.jsonform} ).from(forms).where(and(eq(forms.id, duplicated), eq(forms.createdBy ,userEmail)));
+      data = data[0].jsonform;
+      console.log('data:', data);
+    }
 
     // insert form into database
     const res = await db.insert(forms).values({
-        jsonform: data?.response || "",
+        jsonform: data || "",
         createdBy: userEmail as string,
         createdAt: new Date(),
     }).returning({ id: forms.id });

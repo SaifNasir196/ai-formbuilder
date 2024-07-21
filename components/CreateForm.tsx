@@ -32,14 +32,13 @@ interface CreateFormResponse {
 
 const createForm = async (description: string): Promise<CreateFormResponse> => {
   const response = await axios.post('/api/forms', {
-    message: `Description: ${description}${PROMPT}`
+    message: description
   });
   return response.data;
 }
 
 const CreateForm = () => {
     const ref = useRef<HTMLTextAreaElement>(null)
-    const { user } = useUser();
     const router = useRouter();
     const closeRef = useRef<HTMLButtonElement>(null)
 

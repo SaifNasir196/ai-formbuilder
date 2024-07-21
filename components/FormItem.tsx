@@ -8,16 +8,53 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import Link from 'next/link'
 import { Button } from './ui/button'
-import { Share, BookCopy } from 'lucide-react'
+import { SquareArrowOutUpRight, BookCopy, Edit, Edit2 } from 'lucide-react'
+import axios from 'axios'
+import { QueryObserverResult } from '@tanstack/react-query'
 
+interface CreateFormResponse {
+  id: number;
+}
 
-const FormItem = ({ form }: { form: FormType }) => {
+const createForm = async (description: string): Promise<CreateFormResponse> => {
+  const response = await axios.post('/api/forms', {
+    message: description
+  });
+  return response.data;
+}
+
+const FormItem = ({
+    form,
+    refreshData
+}: { 
+    form: FormType,
+    refreshData: () => Promise<QueryObserverResult<FormType[], Error>>
+}) => {
     const formJson: FormDataType = JSON.parse(form.jsonform)
+
+    const handleDuplicate = async () => {
+        const response = await axios.post('/api/forms', {
+            message: form.id,
+            duplicated: form.id
+        });
+        refreshData();
+    }
+
     return (
-        <Link href={`/edit-form/${form.id}`}>
-        <Card className='drop-shadow-sm hover:shadow-md'>
+        <Card className='w-80 drop-shadow-sm hover:shadow-md transition-all' >
         <CardHeader>
             <CardTitle> {formJson.formTitle} </CardTitle>
             <CardDescription> {formJson.formHeading}</CardDescription>
@@ -28,17 +65,37 @@ const FormItem = ({ form }: { form: FormType }) => {
         </CardContent>
 
         <CardFooter className='gap-2 justify-end'>
-            <Link href="/">
-                <Button variant="secondary"><BookCopy size={20}/></Button>
+            <Link href={`/edit-form/${form.id}`}>
+                <Button variant="secondary" ><Edit2 size={18} /> </Button>
             </Link>
 
+            <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="secondary" onMouseDown={e => e.stopPropagation()}  ><BookCopy size={20}/></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your form
+                    and all responses to it.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDuplicate} >Continue</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+            </AlertDialog>
+
+
+         
             <Link href={`/form/${form.id}`}>
-                <Button ><Share size={18} /> </Button>
+                <Button ><SquareArrowOutUpRight size={18} /> </Button>
             </Link>
             
         </CardFooter>
         </Card>
-        </Link>
     )
 }
 
