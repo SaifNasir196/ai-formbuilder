@@ -1,11 +1,8 @@
 "use client"
 
-import { db } from '@/config'
-import { forms } from '@/config/schema'
-import { and, eq } from 'drizzle-orm'
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Trash, Share, SquareArrowOutUpRight, Check } from 'lucide-react'
+import { Trash, Copy, CopyCheck, SquareArrowOutUpRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
 import { editFieldType, FormDataType } from '@/lib/type'
@@ -23,45 +20,47 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import useCopyToClipboard from '@/app/hooks/useCopyToClipboard'
+import axios from 'axios'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
+const fetchForm = async (formId: number): Promise<FormDataType> => {
+  const response = await axios.get(`/api/forms/${formId}`);
+  return response.data.form;
+}
+
+const updateForm = async ({ formId, jsonform }: { formId: number, jsonform: FormDataType }) => {
+  await axios.put(`/api/forms/${formId}`, { jsonform });
+}
+
+const deleteForm = async (formId: number) => {
+  await axios.delete(`/api/forms/${formId}`);
+}
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
   const { user } = useUser()
   const router = useRouter()
-  const [jsonform, setJsonform] = useState<FormDataType | undefined>(undefined)
-  const [updateTrigger, setUpdateTrigger] = useState(false)
   const { isCopied, copyToClipboard } = useCopyToClipboard()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    user && getFormData()
-  }, [user])
+  const { data: jsonform, isLoading, isError } = useQuery({
+    queryKey: ['form', params.formId],
+    queryFn: () => fetchForm(params.formId),
+    enabled: !!user
+  })
 
-  useEffect(() => {
-    updateDB()
-    return () => {
-      setUpdateTrigger(false)
+  const updateMutation = useMutation({
+    mutationFn: updateForm,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['form', params.formId] })
     }
-  }, [updateTrigger])
-  
+  })
 
-  const getFormData = async () => {
-    const response = await db.select().from(forms)
-      .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
-    setJsonform(JSON.parse(response[0].jsonform));
-  }
-
-  const updateDB = async () => {
-    if (jsonform) {
-      try {
-        const res = await db.update(forms)
-          .set({ jsonform: JSON.stringify(jsonform) })
-          .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
-        console.log('DB updated successfully');
-      } catch (error) {
-        console.error('Error updating DB:', error);
-      }
+  const deleteMutation = useMutation({
+    mutationFn: deleteForm,
+    onSuccess: () => {
+      router.push('/forms')
     }
-  }
+  })
 
   const onFieldUpdate = (value: editFieldType, index: number) => {
     if (!jsonform?.fields[index].label) {
@@ -70,78 +69,70 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
     const updatedJsonform = { ...jsonform };
     updatedJsonform.fields[index].label = value.label;
     updatedJsonform.fields[index].placeholder = value.placeholder;
-    setJsonform(updatedJsonform);
-    setUpdateTrigger(true); 
+    updateMutation.mutate({ formId: params.formId, jsonform: updatedJsonform });
   }
 
-  
   const onFieldDelete = (index: number) => {
-    setJsonform(prevJsonform => {
-      const updatedFields = prevJsonform?.fields.filter((_, i) => i !== index);
-      const updatedJsonform = { ...prevJsonform, fields: updatedFields } as FormDataType;
-      return updatedJsonform;
-    });
-    setUpdateTrigger(true);
-  }
-  const onFormDelete = async () => {
-    try {
-      await db.delete(forms)
-        .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
-      router.push('/forms');
-    } catch (error) {
-      console.error('Error deleting form:', error);
-    }
+    if (!jsonform) return;
+    const updatedFields = jsonform.fields.filter((_, i) => i !== index);
+    const updatedJsonform = { ...jsonform, fields: updatedFields };
+    updateMutation.mutate({ formId: params.formId, jsonform: updatedJsonform });
   }
 
-  
+  const onFormDelete = async () => {
+    deleteMutation.mutate(params.formId);
+  }
+
+  if (isLoading) return <div>Loading...</div>
+  if (isError) return <div>Error loading form</div>
+  if (!jsonform) return <div>Form not found</div>
+
   return (
     <section className='p-10'>
       <div className="flex gap-3 justify-end my-3">
         <AlertDialog>
-        <AlertDialogTrigger><Button variant="destructive"><Trash size={18} onClick={() => onFormDelete()}/></Button></AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your form
-              and all responses to it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Continue</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
+          <AlertDialogTrigger>
+            <Button variant="destructive"><Trash size={18} /></Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your form
+                and all responses to it.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onFormDelete}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
 
         <Link href={`/form/${params.formId}`}>
           <Button variant="secondary"> <SquareArrowOutUpRight size={20} className='mr-2'/>Preview</Button>
         </Link>
 
-        <Button onClick={() => copyToClipboard(process.env.NEXT_PUBLIC_URL + `/form/${params.formId}`)}>
+        <Button className='w-28' onClick={() => copyToClipboard(process.env.NEXT_PUBLIC_URL + `/form/${params.formId}`)}>
           {isCopied ? (
-            <><Check size={20} className='mr-2'/> Copied</> 
+            <><CopyCheck size={20} className='mr-2'/> Copied</> 
             ) : (
-            <> <Share size={20} className='mr-2'/> Share </> 
+            <> <Copy size={20} className='mr-2'/> Copy </> 
           )}
         </Button>
-
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1 border rounded-lg p-4 shadow-md">
-          controller
+          Controller
         </div>
 
         <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
           <FormUI formId={params.formId} form={jsonform} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
         </div>
-
       </div>
-
-      
     </section>
   )
 }
 
-export default EditForm;
+export default EditForm

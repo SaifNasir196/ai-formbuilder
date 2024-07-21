@@ -10,23 +10,26 @@ import {
 } from "@/components/ui/card"
 import Link from 'next/link'
 import { Button } from './ui/button'
-import { Edit2, Share, Trash } from 'lucide-react'
+import { Share, BookCopy } from 'lucide-react'
 
 
 const FormItem = ({ form }: { form: FormType }) => {
     const formJson: FormDataType = JSON.parse(form.jsonform)
     return (
-        <Card className='drop-shadow-sm'>
+        <Link href={`/edit-form/${form.id}`}>
+        <Card className='drop-shadow-sm hover:shadow-md'>
         <CardHeader>
             <CardTitle> {formJson.formTitle} </CardTitle>
             <CardDescription> {formJson.formHeading}</CardDescription>
         </CardHeader>
-        {/* <CardContent>
-            
-        </CardContent> */}
+        
+        <CardContent>
+            40 reponses
+        </CardContent>
+
         <CardFooter className='gap-2 justify-end'>
-            <Link href={`/edit-form/${form.id}`}>
-                <Button variant="secondary"><Edit2 size={18}/></Button>
+            <Link href="/">
+                <Button variant="secondary"><BookCopy size={20}/></Button>
             </Link>
 
             <Link href={`/form/${form.id}`}>
@@ -35,6 +38,7 @@ const FormItem = ({ form }: { form: FormType }) => {
             
         </CardFooter>
         </Card>
+        </Link>
     )
 }
 

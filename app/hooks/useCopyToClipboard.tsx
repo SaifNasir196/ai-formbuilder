@@ -11,7 +11,6 @@ const useCopyToClipboard = () => {
       setTimeout(() => {
         setIsCopied(false);
       }, 1000);
-      console.log('Copied to clipboard:', content);
     } catch (error) {
       setIsCopied(false);
       console.error('Unable to copy to clipboard:', error);
