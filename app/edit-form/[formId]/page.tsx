@@ -5,7 +5,7 @@ import { forms } from '@/config/schema'
 import { and, eq } from 'drizzle-orm'
 import React, { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Trash, Share, SquareArrowOutUpRight } from 'lucide-react'
+import { Trash, Share, SquareArrowOutUpRight, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
 import { editFieldType, FormDataType } from '@/lib/type'
@@ -23,7 +23,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import useCopyToClipboard from '@/app/hooks/useCopyToClipboard'
-
 
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
@@ -119,14 +118,12 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
           <Button variant="secondary"> <SquareArrowOutUpRight size={20} className='mr-2'/>Preview</Button>
         </Link>
 
-        <Button onClick={() => copyToClipboard(`/form/${params.formId}`)}>
-        {isCopied ? (
-          'Copied'
-        ) : (
-          <p><Share size={20} className='mr-2'/> Share </p>
-        )}
-
-          
+        <Button onClick={() => copyToClipboard(process.env.NEXT_PUBLIC_URL + `/form/${params.formId}`)}>
+          {isCopied ? (
+            <><Check size={20} className='mr-2'/> Copied</> 
+            ) : (
+            <> <Share size={20} className='mr-2'/> Share </> 
+          )}
         </Button>
 
       </div>
