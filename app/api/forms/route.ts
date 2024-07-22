@@ -43,29 +43,29 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const { userId } = auth();
-
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const user = await currentUser();
   const userEmail = user?.primaryEmailAddress?.emailAddress;
-
   if (!userEmail)
     return NextResponse.json({ error: 'User email not found' }, { status: 400 });
-
+  
+  console.log('');
   try {
     const { message, duplicated = false } = await request.json();
     let data;
 
     if (!duplicated) {
       // send request to Gemini
-      const response = await fetch(process.env.NEXT_PUBLIC_URL + '/api/gemini', {
+      const url = process.env.NODE_ENV === 'development' ? process.env.NEXT_PUBLIC_DEV_URL : process.env.NEXT_PUBLIC_PROD_URL
+      const response = await fetch(url  + '/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
       });
-      
+
 
       if (!response.ok)
         throw new Error('Network response was not ok');
