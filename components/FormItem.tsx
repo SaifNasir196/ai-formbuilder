@@ -25,17 +25,6 @@ import { SquareArrowOutUpRight, BookCopy, Edit, Edit2 } from 'lucide-react'
 import axios from 'axios'
 import { QueryObserverResult } from '@tanstack/react-query'
 
-interface CreateFormResponse {
-  id: number;
-}
-
-const createForm = async (description: string): Promise<CreateFormResponse> => {
-  const response = await axios.post('/api/forms', {
-    message: description
-  });
-  return response.data;
-}
-
 const FormItem = ({
     form,
     refreshData
@@ -46,9 +35,9 @@ const FormItem = ({
     const formJson: FormDataType = JSON.parse(form.jsonform)
 
     const handleDuplicate = async () => {
-        const response = await axios.post('/api/forms', {
+        await axios.post('/api/forms', {
             message: form.id,
-            duplicated: form.id
+            duplicated: true
         });
         refreshData();
     }
@@ -88,8 +77,6 @@ const FormItem = ({
             </AlertDialogContent>
             </AlertDialog>
 
-
-         
             <Link href={`/form/${form.id}`}>
                 <Button ><SquareArrowOutUpRight size={18} /> </Button>
             </Link>

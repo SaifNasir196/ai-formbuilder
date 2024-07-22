@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'User email not found' }, { status: 400 });
 
   try {
-    const { message, duplicated = 0 } = await request.json();
+    const { message, duplicated = false } = await request.json();
     let data;
 
     if (!duplicated) {
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
       });
+      
 
       if (!response.ok)
         throw new Error('Network response was not ok');
@@ -74,10 +75,8 @@ export async function POST(request: NextRequest) {
       data = data?.response;
       
     } else {
-      // duplicate is a formId of an existing form
       // only get the jsonform of the existing form
-      // const data = await db.select().from(forms).where(and(eq(forms.id, duplicated), eq(forms.createdBy ,userEmail)));
-      data = await db.select( {jsonform: forms.jsonform} ).from(forms).where(and(eq(forms.id, duplicated), eq(forms.createdBy ,userEmail)));
+      data = await db.select( {jsonform: forms.jsonform} ).from(forms).where(and(eq(forms.id, message), eq(forms.createdBy ,userEmail)));
       data = data[0].jsonform;
       console.log('data:', data);
     }
