@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionType } from "./type";
+import { Option } from "./type";
 
 export const navLinks = [
     {
