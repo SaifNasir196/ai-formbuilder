@@ -12,8 +12,7 @@ export const responses = pgTable('responses', {
     id: serial('id').primaryKey(),
     formId: integer('formId').references(() => forms.id).notNull(), // FK to forms.id
     response: text('response').notNull(),
-    createdAt: timestamp('createdAt').notNull().defaultNow(),
-    createdBy: varchar('createdBy').default("Anonymous"),
+    respondedAt: timestamp('respondedAt').notNull().defaultNow(),
 })
 
 

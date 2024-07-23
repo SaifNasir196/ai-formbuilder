@@ -1,6 +1,6 @@
 import React from 'react'
 // types
-import { editFieldType, fieldType } from '@/lib/type'
+import { editFieldType, Field } from '@/lib/type'
 import { Control, FieldValues } from 'react-hook-form'
 
 // components
@@ -31,7 +31,7 @@ const SelectField = ({
     onFieldDelete
 }: {
     control: Control<FieldValues>,
-    fieldData: fieldType,
+    fieldData: Field,
     index: number,
     onFieldUpdate: (value: editFieldType, index: number) => void,
     onFieldDelete: (index: number) => void

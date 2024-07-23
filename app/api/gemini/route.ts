@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { model } from "@/lib/utils";
+import { model } from "@/lib/utils/utils";
 import { PROMPT } from '@/lib/data';
 
 

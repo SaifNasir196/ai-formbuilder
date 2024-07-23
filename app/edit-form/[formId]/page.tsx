@@ -1,11 +1,19 @@
 "use client"
 
+// const updateForm = async ({ formId, jsonform }: { formId: number, jsonform: FormDataType }) => {
+//   await axios.put(`/api/forms/${formId}`, { jsonform });
+// }
+
+// const deleteForm = async (formId: number) => {
+//   await axios.delete(`/api/forms/${formId}`);
+// }
+
 import React from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Trash, Copy, CopyCheck, SquareArrowOutUpRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
-import { editFieldType, FormDataType } from '@/lib/type'
+import { editFieldType, FormData } from '@/lib/type'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import {
@@ -20,72 +28,50 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import useCopyToClipboard from '@/app/hooks/useCopyToClipboard'
-import axios from 'axios'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-
-const fetchForm = async (formId: number): Promise<FormDataType> => {
-  const response = await axios.get(`/api/forms/${formId}`);
-  return response.data.form;
-}
-
-const updateForm = async ({ formId, jsonform }: { formId: number, jsonform: FormDataType }) => {
-  await axios.put(`/api/forms/${formId}`, { jsonform });
-}
-
-const deleteForm = async (formId: number) => {
-  await axios.delete(`/api/forms/${formId}`);
-}
+import { useDeleteForm, useForm, useUpdateForm } from '@/app/hooks/useForms'
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
   const { user } = useUser()
   const router = useRouter()
   const { isCopied, copyToClipboard } = useCopyToClipboard()
-  const queryClient = useQueryClient()
 
-  const { data: jsonform, isLoading, isError } = useQuery({
-    queryKey: ['form', params.formId],
-    queryFn: () => fetchForm(params.formId),
-    enabled: !!user
-  })
+  const { data: form, isLoading, isError } = useForm(params.formId)
+  const updateForm = useUpdateForm()
+  const deleteForm = useDeleteForm()
 
-  const updateMutation = useMutation({
-    mutationFn: updateForm,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['form', params.formId] })
-    }
-  })
+  console.log('data', form);
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteForm,
-    onSuccess: () => {
-      router.push('/forms')
-    }
-  })
+  if (isLoading || !form?.jsonform) return <div>Loading...</div>
+
+  const jsonform = JSON.parse(form.jsonform) as FormData
 
   const onFieldUpdate = (value: editFieldType, index: number) => {
-    if (!jsonform?.fields[index].label) {
+    if (!jsonform?.fields[index].label)
       throw new Error('Field label is missing')
-    }
+
     const updatedJsonform = { ...jsonform };
     updatedJsonform.fields[index].label = value.label;
     updatedJsonform.fields[index].placeholder = value.placeholder;
-    updateMutation.mutate({ formId: params.formId, jsonform: updatedJsonform });
+    updateForm.mutate({ formId: params.formId, jsonform: updatedJsonform });
   }
 
   const onFieldDelete = (index: number) => {
     if (!jsonform) return;
     const updatedFields = jsonform.fields.filter((_, i) => i !== index);
     const updatedJsonform = { ...jsonform, fields: updatedFields };
-    updateMutation.mutate({ formId: params.formId, jsonform: updatedJsonform });
+    updateForm.mutate({ formId: params.formId, jsonform: updatedJsonform });
   }
 
   const onFormDelete = async () => {
-    deleteMutation.mutate(params.formId);
+    deleteForm.mutate(params.formId, {
+      onSuccess: () => {
+        router.push('/forms')
+      }
+    });
   }
 
-  if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Error loading form</div>
-  if (!jsonform) return <div>Form not found</div>
+  if (!form?.jsonform) return <div>Form not found</div>
 
   return (
     <section className='p-10'>
@@ -128,7 +114,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
         </div>
 
         <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
-          <FormUI formId={params.formId} form={jsonform} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
+          <FormUI formId={params.formId} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
         </div>
       </div>
     </section>

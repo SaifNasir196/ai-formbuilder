@@ -30,7 +30,7 @@ export async function GET(
       return NextResponse.json({ error: 'Form not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ form: JSON.parse(response[0].jsonform) });
+    return NextResponse.json({ form: response[0] });
   } catch (error) {
     console.error('Error fetching form data:', error);
     return NextResponse.json({ error: 'Failed to fetch form data' }, { status: 500 });

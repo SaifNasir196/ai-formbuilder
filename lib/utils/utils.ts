@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { validations } from "@/lib/data";
-import { FormDataType, fieldType } from "@/lib/type";
+import { FormData, Field, FormResponse, ParsedFormResponse } from "@/lib/type";
 import { z } from "zod";
 import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
 
@@ -89,7 +89,7 @@ export const model = genAI.getGenerativeModel({
 // });
 
 
-export const createDynamicSchema = (jsonData: FormDataType | undefined) => {
+export const createDynamicSchema = (jsonData: FormData | undefined) => {
   if (!jsonData) return z.object({});
   
   const schemaFields: Record<string, z.ZodTypeAny> = {};
@@ -99,7 +99,7 @@ export const createDynamicSchema = (jsonData: FormDataType | undefined) => {
   return z.object(schemaFields);
 }
 
-const createFieldSchema = (field: fieldType) => {
+const createFieldSchema = (field: Field) => {
   const isRequired = field.required || false;
 
   // Start with base schema based on field type
@@ -140,7 +140,7 @@ const createFieldSchema = (field: fieldType) => {
 
 }
 
-export const getDefaultValues = (form: FormDataType) => {
+export const getDefaultValues = (form: FormData) => {
   return form?.fields.reduce((acc, field) => {
     switch (field.fieldType) {
       case 'number':
@@ -165,4 +165,27 @@ export const getDefaultValues = (form: FormDataType) => {
     }
     return acc;
   }, {} as Record<string, any>);
+}
+
+// Function to parse the response JSON
+export const parseFormResponse = (response: FormResponse): ParsedFormResponse => {
+    try {
+        const parsedJson = JSON.parse(response.response)
+        return {
+            id: response.id,
+            formId: response.formId,
+            respondedAt: response.respondedAt.toString(),
+            name: parsedJson.name || 'N/A',
+            email: parsedJson.email || 'N/A',
+        }
+    } catch (error) {
+        console.error('Error parsing response:', error);
+        return {
+            id: response.id,
+            formId: response.formId,
+            respondedAt: response.respondedAt.toString(),
+            name: 'Error',
+            email: 'Error',
+        }
+    }
 }

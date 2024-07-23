@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { fieldType, editFieldType  } from '@/lib/type'
+import { Field, editFieldType  } from '@/lib/type'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +24,7 @@ const FieldOptions = ({
     onUpdate,
     onDelete
 }:{ 
-    defaultValue: fieldType,
+    defaultValue: Field,
     onUpdate: (value: editFieldType) => void,
     onDelete: () => void,
 }) => {

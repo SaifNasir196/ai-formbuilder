@@ -1,4 +1,4 @@
-import { FormDataType, FormType } from '@/lib/type'
+import { FormData, Form } from '@/lib/type'
 import React from 'react'
 import {
   Card,
@@ -21,25 +21,25 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from 'next/link'
 import { Button } from './ui/button'
-import { SquareArrowOutUpRight, BookCopy, Edit, Edit2 } from 'lucide-react'
-import axios from 'axios'
-import { QueryObserverResult } from '@tanstack/react-query'
+import { SquareArrowOutUpRight, BookCopy, Edit2 } from 'lucide-react'
+import { useCreateForm } from '@/app/hooks/useForms'  
 
 const FormItem = ({
     form,
     refreshData
 }: { 
-    form: FormType,
-    refreshData: () => Promise<QueryObserverResult<FormType[], Error>>
+    form: Form,
+    refreshData: () => void
 }) => {
-    const formJson: FormDataType = JSON.parse(form.jsonform)
+    const formJson: FormData = JSON.parse(form.jsonform)
+    const createForm = useCreateForm()
 
     const handleDuplicate = async () => {
-        await axios.post('/api/forms', {
-            message: form.id,
-            duplicated: true
-        });
-        refreshData();
+        createForm.mutate({ message: form.id.toString(), duplicated: true }, {
+            onSuccess: () => {
+                refreshData()
+            }
+        })
     }
 
     return (
@@ -59,22 +59,21 @@ const FormItem = ({
             </Link>
 
             <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="secondary" onMouseDown={e => e.stopPropagation()}  ><BookCopy size={20}/></Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your form
-                    and all responses to it.
-                </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDuplicate} >Continue</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+                <AlertDialogTrigger asChild>
+                    <Button variant="secondary" onMouseDown={e => e.stopPropagation()}  ><BookCopy size={20}/></Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to duplicate this form?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action will create a new form with the same content.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDuplicate}>Duplicate</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
             </AlertDialog>
 
             <Link href={`/form/${form.id}`}>

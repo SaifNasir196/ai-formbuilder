@@ -1,9 +1,14 @@
-import React from 'react'
+import ResponseTable from "./ResponseTable"
 
-const page = () => {
+
+const Page = () => {
+
   return (
-    <div>responses</div>
+    <div className="container mx-auto py-10">
+      <ResponseTable />
+    </div>
   )
 }
 
-export default page
+
+export default Page

@@ -1,34 +1,38 @@
 "use client"
 
-import { db } from '@/config'
-import { forms } from '@/config/schema'
-import { and, eq } from 'drizzle-orm'
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useUser } from '@clerk/nextjs'
 import FormUI from '@/components/FormUI'
-import { FormDataType } from '@/lib/type'
-
+import { useForm } from '@/app/hooks/useForms'  // Import the hook
+import { FormData } from '@/lib/type'
 
 const DisplayForm = ({ params }: { params: { formId: number } }) => {
     const { user } = useUser()
-    const [jsonform, setJsonform] = useState<FormDataType | undefined>(undefined)
+    const { data: form, isLoading, isError, error } = useForm(params.formId)
 
-    useEffect(() => {
-        user && getFormData()
-    }, [user])
-
-
-    const getFormData = async () => {
-        const response = await db.select().from(forms)
-        .where(and(eq(forms.id, params.formId), eq(forms.createdBy, user?.primaryEmailAddress?.emailAddress || '')));
-        setJsonform(JSON.parse(response[0].jsonform));
+    if (isLoading) {
+        return <div>Loading...</div>
     }
+
+    if (isError) {
+        return <div>Error loading form: {error.message}</div>
+    }
+
+    if (!form) {
+        return <div>Form not found</div>
+    }
+
+    const jsonform: FormData = JSON.parse(form.jsonform)
 
     return (
         <section className='mx-60 pt-44 pb-44 flex justify-center'>
-            <FormUI formId={params.formId} form={jsonform} onFieldUpdate={() => {}} onFieldDelete={() => {}}/>
+            <FormUI 
+                formId={params.formId} 
+                onFieldUpdate={() => {}} 
+                onFieldDelete={() => {}}
+            />
         </section>
     )
 }
 
-export default DisplayForm;
+export default DisplayForm
