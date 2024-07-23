@@ -97,14 +97,14 @@ export const validations = {
         let schema = z.boolean();
         return required ? schema : schema.optional();
     },
-    radio: (options: optionType[], required = false) => {
+    radio: (options: Option[], required = false) => {
         console.log('Options:', options);
         const values = options.map(option => option.value);
         let schema = z.enum(values as [string, ...string[]]);
         return required ? schema : schema.optional();
     },
 
-    select: (options: optionType[], required = false) => {
+    select: (options: Option[], required = false) => {
         const values = options.map(option => option.value);
         let schema = z.enum(values as [string, ...string[]]);
         return required ? schema : schema.optional();
