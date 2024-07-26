@@ -10,9 +10,12 @@ import { cn } from '@/lib/utils/utils'
 import { SignInButton } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import CreateForm from './CreateForm'
+import { useUser } from '@clerk/nextjs'
+import { User } from 'lucide-react'
 
 const Header = ({ loggedIn }: { loggedIn: boolean }) => {
-  const path = usePathname()
+  const path = usePathname();
+  const { isSignedIn } = useUser();
   if (!path.includes('/form/')) return (
     <header className="navbar bg-base-100 w-full border-b drop-shadow-md">
       <div className="navbar-start">
@@ -21,7 +24,7 @@ const Header = ({ loggedIn }: { loggedIn: boolean }) => {
           </Link>
       </div>
 
-      {loggedIn ? (
+      {isSignedIn ? (
       <>
         <nav className="navbar-center ">
           <ul className="flex w-[22rem] flex-wrap items-center justify-center gap-y-1 text-[0.9rem] font-medium text-gray-500 sm:w-[initial] sm:flex-nowrap sm:gap-5">
