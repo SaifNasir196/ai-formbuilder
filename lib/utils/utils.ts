@@ -21,10 +21,13 @@ export const model = genAI.getGenerativeModel({
     responseMimeType: "application/json",
   },
 });
-
-// let model = genAI.getGenerativeModel({
+// export const model = genAI.getGenerativeModel({ 
 //   model: "gemini-1.5-pro",
 //   generationConfig: {
+//     temperature: 0.7,
+//     topP: 1,
+//     topK: 40,
+//     maxOutputTokens: 8192,
 //     responseMimeType: "application/json",
 //     responseSchema: {
 //       type: FunctionDeclarationSchemaType.OBJECT,
@@ -85,8 +88,9 @@ export const model = genAI.getGenerativeModel({
 //         },
 //       },
 //     },
-//   }
+//   },
 // });
+
 
 
 export const createDynamicSchema = (jsonData: FormData | undefined) => {
@@ -175,7 +179,8 @@ export const parseFormResponse = (response: FormResponse): ParsedFormResponse =>
             id: response.id,
             formId: response.formId,
             respondedAt: response.respondedAt.toString(),
-            name: parsedJson.name || 'N/A',
+            firstName: parsedJson.firstName || 'N/A',
+            lastName: parsedJson.lastName || 'N/A',
             email: parsedJson.email || 'N/A',
         }
     } catch (error) {
@@ -184,8 +189,48 @@ export const parseFormResponse = (response: FormResponse): ParsedFormResponse =>
             id: response.id,
             formId: response.formId,
             respondedAt: response.respondedAt.toString(),
-            name: 'Error',
+            firstName: 'Error',
+            lastName: 'Error',
             email: 'Error',
         }
     }
 }
+
+export const exportToCSV = (data: ParsedFormResponse[]) => {
+  // Get all unique keys from the data
+  const allKeys = Array.from(new Set(data.flatMap(obj => Object.keys(obj))));
+  
+  // Create CSV header
+  const header = allKeys.join(',');
+  
+  // Create CSV rows
+  const rows = data.map(obj => 
+    allKeys.map(key => {
+      let cell = obj[key as keyof ParsedFormResponse] || '';
+      // Escape commas and quotes
+      cell = cell.toString().replace(/"/g, '""');
+      if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+        cell = `"${cell}"`;
+      }
+      return cell;
+    }).join(',')
+  );
+  
+  // Combine header and rows
+  const csv = [header, ...rows].join('\n');
+  
+  // Create a Blob with the CSV content
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  
+  // Create a download link and trigger the download
+  const link = document.createElement('a');
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'form_responses.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};

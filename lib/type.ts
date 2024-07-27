@@ -31,7 +31,8 @@ export type ParsedFormResponse = {
   id: number
   formId: number
   respondedAt: string
-  name?: string
+  firstName?: string
+  lastName?: string
   email?: string
   keyQuestion?: string
 }

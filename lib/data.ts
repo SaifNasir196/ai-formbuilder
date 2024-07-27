@@ -21,30 +21,58 @@ export const navLinks = [
 ] as const
 
 export const PROMPT = `
-. based on the previous sentence create a json string of format FormDataSchema: z.ZodObject<{
-    formTitle: z.ZodString;
-    formHeading: z.ZodString;
-    fields: z.ZodArray<z.ZodObject<{
-        fieldName: z.ZodString;
-        fieldType: z.ZodString;
-        label: z.ZodString;
-        placeholder: z.ZodOptional<z.ZodString>;
-        min: z.ZodOptional<...>;
-        max: z.ZodOptional<...>;
-        max: z.ZodOptional<...>;
-        required: z.ZodOptional<...>;
-        options: z.ZodOptional<...>;
-    }>>;
+. Based on the user's prompt, create a form using the following guidelines:
 
-    and
-    optionSchema = z.object({
-        label: z.string(),
-        value: z.string()
-    });
+1. Generate a JSON object that follows this structure:
+   {
+     "formTitle": "A concise, relevant title for the form",
+     "formHeading": "A brief description or instruction for the form",
+     "fields": [
+       // Array of field objects
+     ]
+   }
 
-}>
-. There are 11 types of fields in the form, email, string, number, tel, url, date, select, checkbox (for multi select), radio, select, file, switch. 
-  Give a parseable string, only give json content and nothing else.
+2. Always include the following fields, regardless of the user's prompt:
+   - First Name (string type, required)
+   - Last Name (string type, required)
+   - Email (email type, required)
+
+3. Each field in the "fields" array should be an object with these properties:
+   - fieldName: A unique, camelCase identifier for the field
+   - fieldType: One of the following types:
+     "email", "string", "number", "tel", "url", "date", "select", "checkbox", "radio", "file", "switch"
+   - label: A clear, concise label for the field
+   - placeholder: (optional) Placeholder text for the field
+   - min: (optional) Minimum value for number fields or minimum length for string fields
+   - max: (optional) Maximum value for number fields or maximum length for string fields
+   - required: (optional) Boolean indicating if the field is required
+   - options: (required for select, checkbox, and radio types) An array of option objects, each with "label" and "value" properties
+
+4. Use the appropriate fieldType based on the nature of the information requested:
+   - "email" for email addresses
+   - "string" for general text input
+   - "number" for numeric input
+   - "tel" for phone numbers
+   - "url" for website URLs
+   - "date" for date input
+   - "select" for dropdown selection from multiple options
+   - "checkbox" for multiple-choice selection
+   - "radio" for single-choice selection from multiple options
+   - "file" for file uploads
+   - "switch" for simple on/off toggles
+
+5. Include relevant validation:
+   - Use "required: true" for essential fields
+   - Set appropriate "min" and "max" values for number and string fields
+   - Provide comprehensive "options" arrays for select, checkbox, and radio fields
+
+6. Ensure the form structure is logical and user-friendly, with related fields grouped together.
+
+7. Limit the form to essential fields only, avoiding unnecessary complexity.
+
+8. Always include First Name, Last Name, and Email fields at the beginning of the form, even if the user's prompt explicitly states not to include them.
+
+Generate a complete, valid JSON object representing the form based on these guidelines and the user's prompt.
 ` as const;
 
 

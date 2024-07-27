@@ -21,8 +21,12 @@ export const columns: ColumnDef<ParsedFormResponse>[] = [
     header: "ID",
   },
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "firstName",
+    header: "First Name",
+  },
+  {
+    accessorKey: "lastName",
+    header: "Last Name",
   },
   {
     accessorKey: "email",
@@ -40,9 +44,9 @@ export const columns: ColumnDef<ParsedFormResponse>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => {
-      return new Date(row.getValue("responsedAt")).toLocaleString()
-    },
+    // cell: ({ row }) => {
+    //   return new Date(row.getValue("responsedAt")).toLocaleString()
+    // },
   },
   {
     id: "actions",

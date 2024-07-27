@@ -11,7 +11,7 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    useReactTable,
+    useReactTable
 } from "@tanstack/react-table"
 import {
     Table,
@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select"
 import { useForms } from "@/app/hooks/useForms"
 import { useResponses } from "@/app/hooks/useResponses"
-import { parseFormResponse } from "@/lib/utils/utils"
+import { parseFormResponse, exportToCSV } from "@/lib/utils/utils"
 import { ParsedFormResponse } from "@/lib/type"
 
 
@@ -53,7 +53,7 @@ const ResponseTable = () => {
 
     const [selectedForm, setSelectedForm] = useState<number>(0);
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = useState("");
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
     const { data: forms, isLoading: isFormsLoading } = useForms();
@@ -72,14 +72,16 @@ const ResponseTable = () => {
     const table = useReactTable({
         data: memoizedResponses || emptyArray,
         columns,
+        enableRowSelection: true,
+        // onRowSelectionChange: setRowSelection,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
-        onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
-        state: { sorting, columnFilters, columnVisibility },
+        state: { sorting, globalFilter, columnVisibility },
         
     })
 
@@ -118,10 +120,13 @@ const ResponseTable = () => {
 
             <Input
                 placeholder="Filter by name or emails..."
-                value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-                onChange={(event) =>
-                    table.getColumn("name")?.setFilterValue(event.target.value)
-                }
+                // value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
+                // onChange={(event) =>
+                //     table.getColumn("firstName")?.setFilterValue(event.target.value)
+                // }
+                value={globalFilter ?? ""}
+                onChange={(event) => setGlobalFilter(event.target.value)}
+
                 className="flex-grow"
             />
 
@@ -156,7 +161,7 @@ const ResponseTable = () => {
                 </DropdownMenu>
 
                 {/* export button */}
-                <Button variant="outline" className="ml-auto w-28"> Export </Button>
+                <Button variant="outline" className="ml-auto w-28" onClick={() => exportToCSV(memoizedResponses)}> Export </Button>
             </div>
         </div>
 

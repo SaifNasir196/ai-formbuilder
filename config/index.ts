@@ -12,7 +12,6 @@ if (!process.env.DATABASE_URL_CONFIG) {
 }
 
 
-
 const sql = neon(process.env.DATABASE_URL_CONFIG!);
 export const db = drizzle(sql, { schema });
-
+console.error('Error connecting to database');

@@ -34,9 +34,7 @@ const FieldOptions = ({
     const path = usePathname()
 
     return (
-        path.includes('/form') ? (
-            <div className=""></div>
-        ) : (
+        path.includes('/edit-form') ? (
         <div className="mt-7 flex gap-1">
             <Popover>
                 <PopoverTrigger>
@@ -112,6 +110,8 @@ const FieldOptions = ({
                 </AlertDialog>
 
         </div>
+        ) : (
+            <div className=""></div>
         )
     )
 
