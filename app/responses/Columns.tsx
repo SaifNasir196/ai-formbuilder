@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { ParsedFormResponse } from "@/lib/type"
+import { DateTime } from 'luxon'
 
 // This type represents the parsed response data
 
@@ -44,9 +45,7 @@ export const columns: ColumnDef<ParsedFormResponse>[] = [
         </Button>
       )
     },
-    // cell: ({ row }) => {
-    //   return new Date(row.getValue("responsedAt")).toLocaleString()
-    // },
+    cell: ({ row }) => DateTime.fromISO(row.original.respondedAt).toLocaleString(DateTime.DATETIME_MED),
   },
   {
     id: "actions",

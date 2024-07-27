@@ -2,8 +2,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { columns } from "./Columns"
 import {
-    ColumnDef,
-    ColumnFiltersState,
     SortingState,
     VisibilityState,
     flexRender,
@@ -28,6 +26,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import {
   Select,
@@ -38,14 +37,12 @@ import {
 } from "@/components/ui/select"
 import { useForms } from "@/app/hooks/useForms"
 import { useResponses } from "@/app/hooks/useResponses"
-import { parseFormResponse, exportToCSV } from "@/lib/utils/utils"
+import { parseFormResponse } from "@/lib/utils/utils"
+import { exportToCSV } from "@/lib/utils/tableUtils"
 import { ParsedFormResponse } from "@/lib/type"
+import { Checkbox } from "@/components/ui/checkbox"
+import ResponseDetailsModal from "./ResponseDetailsModal"
 
-
-// interface ResponseTableProps<TData, TValue> {
-//   columns: ColumnDef<TData, TValue>[]
-//   data: TData[]
-// }
 const emptyArray: ParsedFormResponse[] = [];
  
 const ResponseTable = () => {
@@ -55,6 +52,10 @@ const ResponseTable = () => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState("");
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedResponse, setSelectedResponse] = useState<Partial<ParsedFormResponse>>({});
+
 
     const { data: forms, isLoading: isFormsLoading } = useForms();
     const { data: responses, isLoading: isResponsesLoading } = useResponses(selectedForm);
@@ -73,7 +74,7 @@ const ResponseTable = () => {
         data: memoizedResponses || emptyArray,
         columns,
         enableRowSelection: true,
-        // onRowSelectionChange: setRowSelection,
+        onRowSelectionChange: setRowSelection,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
@@ -81,7 +82,7 @@ const ResponseTable = () => {
         onGlobalFilterChange: setGlobalFilter,
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
-        state: { sorting, globalFilter, columnVisibility },
+        state: { sorting, globalFilter, columnVisibility, rowSelection },
         
     })
 
@@ -96,40 +97,48 @@ const ResponseTable = () => {
 
     return (
         <div>
-        {/* Filtering */}
-        <div className="flex items-center justify-between py-4 gap-4">
-            <Select onValueChange={handleFormSelect} value={selectedForm.toString()} >
-            <SelectTrigger className="w-96">
-                <SelectValue placeholder="Form" />
-            </SelectTrigger>
-            <SelectContent>
-                {forms?.map((form) => {
-                    const formTitle = JSON.parse(form.jsonform).formTitle
-                    return (
-                        <SelectItem key={form.id} value={form.id.toString()}>
-                            {formTitle}
-                        </SelectItem>
+            {/* Form select */}
+            <div className="flex items-center justify-between py-4 gap-4">
+                <Select onValueChange={handleFormSelect} value={selectedForm.toString()} >
+                <SelectTrigger className="w-96">
+                    <SelectValue placeholder="Form" />
+                </SelectTrigger>
+                <SelectContent>
+                    {forms?.map((form) => {
+                        const formTitle = JSON.parse(form.jsonform).formTitle
+                        return (
+                            <SelectItem key={form.id} value={form.id.toString()}>
+                                {formTitle}
+                            </SelectItem>
+                        )}
                     )}
-                )}
-                
+                    
 
-            </SelectContent>
-            </Select>
+                </SelectContent>
+                </Select>
 
-
-
+            {/* Filter input */}
             <Input
                 placeholder="Filter by name or emails..."
-                // value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
-                // onChange={(event) =>
-                //     table.getColumn("firstName")?.setFilterValue(event.target.value)
-                // }
                 value={globalFilter ?? ""}
                 onChange={(event) => setGlobalFilter(event.target.value)}
-
                 className="flex-grow"
             />
 
+            {/* Bulk action */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto" disabled={Object.keys(rowSelection).length === 0}>
+                    Bulk Actions
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                <DropdownMenuItem onSelect={()=>{}}>Delete Selected</DropdownMenuItem>
+                <DropdownMenuItem onSelect={()=>{}}>Export Selected</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Column Visibility */}
             <div className="flex gap-4"> 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -163,29 +172,39 @@ const ResponseTable = () => {
                 {/* export button */}
                 <Button variant="outline" className="ml-auto w-28" onClick={() => exportToCSV(memoizedResponses)}> Export </Button>
             </div>
+
         </div>
 
         {/* Data */}
         <div className="rounded-md border">
             <Table>
                 <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                        return (
-                        <TableHead key={header.id}>
-                            {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                                )}
+                    {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                        <TableHead className="w-[48px]">
+                            <Checkbox
+                                checked={
+                                table.getIsAllPageRowsSelected() ||
+                                (table.getIsSomePageRowsSelected() && "indeterminate")
+                                }
+                                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                                aria-label="Select all"
+                            />
                         </TableHead>
-                        )
-                    })}
-                    </TableRow>
-                ))}
+                        {headerGroup.headers.map((header) => (
+                            <TableHead key={header.id}>
+                                {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                    )}
+                            </TableHead>
+                        ))}
+                        </TableRow>
+                    ))}
                 </TableHeader>
+                
                 <TableBody>
                 { isFormsLoading || isResponsesLoading ? (
                     <TableRow>
@@ -199,11 +218,29 @@ const ResponseTable = () => {
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
                     >
-                        {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <TableCell>
+                            <Checkbox
+                                checked={row.getIsSelected()}
+                                onCheckedChange={(value) => row.toggleSelected(!!value)}
+                                aria-label="Select row"
+                            />
                         </TableCell>
+
+                        {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
                         ))}
+                        <TableCell>
+                            <Button
+                            onClick={() => {
+                                setSelectedResponse(row.original)
+                                setIsDetailsModalOpen(true)
+                            }}
+                            >
+                            View Details
+                            </Button>
+                        </TableCell>
                     </TableRow>
                     ))
                 ) : (
@@ -215,6 +252,12 @@ const ResponseTable = () => {
                 )}
                 </TableBody>
             </Table>
+
+             <ResponseDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => setIsDetailsModalOpen(false)}
+                response={selectedResponse}
+            />
         </div>
         {/* Page controls */}
         <div className="flex items-center justify-between space-x-2 py-4">
