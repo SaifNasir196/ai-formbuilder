@@ -29,9 +29,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import useCopyToClipboard from '@/app/hooks/useCopyToClipboard'
 import { useDeleteForm, useForm, useUpdateForm } from '@/app/hooks/useForms'
+import { Skeleton } from '@/components/ui/skeleton'
+
 
 const EditForm = ({ params }: { params: { formId: number } }) => {
-  const { user } = useUser()
   const router = useRouter()
   const { isCopied, copyToClipboard } = useCopyToClipboard()
 
@@ -39,13 +40,9 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
   const updateForm = useUpdateForm()
   const deleteForm = useDeleteForm()
 
-  console.log('data', form);
-
-  if (isLoading || !form?.jsonform) return <div>Loading...</div>
-
-  const jsonform = JSON.parse(form.jsonform) as FormData
-
   const onFieldUpdate = (value: editFieldType, index: number) => {
+    if (!form?.jsonform) return;
+    const jsonform = JSON.parse(form.jsonform) as FormData;
     if (!jsonform?.fields[index].label)
       throw new Error('Field label is missing')
 
@@ -56,7 +53,8 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
   }
 
   const onFieldDelete = (index: number) => {
-    if (!jsonform) return;
+    if (!form?.jsonform) return;
+    const jsonform = JSON.parse(form.jsonform) as FormData;
     const updatedFields = jsonform.fields.filter((_, i) => i !== index);
     const updatedJsonform = { ...jsonform, fields: updatedFields };
     updateForm.mutate({ formId: params.formId, jsonform: updatedJsonform });
@@ -69,9 +67,47 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
       }
     });
   }
+const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
+          <div className='w-3/4 xl:w-1/2'>
+            <Skeleton className="w-3/4 h-8 mx-auto mb-4" />
+            <Skeleton className="w-1/2 h-4 mx-auto mb-8" />
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="mb-6">
+                <Skeleton className="w-1/4 h-4 mb-2" />
+                <Skeleton className="w-full h-10" />
+              </div>
+            ))}
+            <Skeleton className="w-full h-10 mt-16" />
+          </div>
+        </div>
+      )
+    }
 
-  if (isError) return <div>Error loading form</div>
-  if (!form?.jsonform) return <div>Form not found</div>
+    if (isError) {
+      return (
+        <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
+          <div className='text-center text-red-500'>Error loading form</div>
+        </div>
+      )
+    }
+
+    if (!form?.jsonform) {
+      return (
+        <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
+          <div className='text-center'>Form not found</div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
+        <FormUI formId={params.formId} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
+      </div>
+    )
+  }
 
   return (
     <section className='p-10'>
@@ -110,12 +146,10 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1 border rounded-lg p-4 shadow-md">
-          Controller
+          {isLoading ? <Skeleton className="w-full h-20" /> : "Controller"}
         </div>
 
-        <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
-          <FormUI formId={params.formId} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
-        </div>
+        {renderContent()}
       </div>
     </section>
   )

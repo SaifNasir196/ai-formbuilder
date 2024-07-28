@@ -1,17 +1,13 @@
-import { ParsedFormResponse } from "../type";
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import { ParsedFormResponse } from "@/lib/type"
 
 export const exportToCSV = (data: ParsedFormResponse[]) => {
-  // Get all unique keys from the data
   const allKeys = Array.from(new Set(data.flatMap(obj => Object.keys(obj))));
-  
-  // Create CSV header
   const header = allKeys.join(',');
-  
-  // Create CSV rows
   const rows = data.map(obj => 
     allKeys.map(key => {
       let cell = obj[key as keyof ParsedFormResponse] || '';
-      // Escape commas and quotes
       cell = cell.toString().replace(/"/g, '""');
       if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
         cell = `"${cell}"`;
@@ -19,14 +15,8 @@ export const exportToCSV = (data: ParsedFormResponse[]) => {
       return cell;
     }).join(',')
   );
-  
-  // Combine header and rows
   const csv = [header, ...rows].join('\n');
-  
-  // Create a Blob with the CSV content
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  
-  // Create a download link and trigger the download
   const link = document.createElement('a');
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
@@ -37,5 +27,28 @@ export const exportToCSV = (data: ParsedFormResponse[]) => {
     link.click();
     document.body.removeChild(link);
   }
-};  
+};
 
+export const exportToPDF = (data: ParsedFormResponse[]) => {
+  const doc = new jsPDF()
+  const tableColumn = Object.keys(data[0])
+  const tableRows = data.map(item => Object.values(item))
+
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 20,
+  })
+  
+  doc.text("Form Responses", 14, 15)
+  doc.save('form_responses.pdf')
+};
+
+
+export const handleBulkDelete = (selectedRows: ParsedFormResponse[]) => {
+  console.log('Bulk delete', selectedRows)
+  // Implement actual delete logic here
+  // This might involve calling an API, updating state, etc.
+};
+
+// Add any other utility functions you need...

@@ -38,16 +38,15 @@ import {
 import { useForms } from "@/app/hooks/useForms"
 import { useResponses } from "@/app/hooks/useResponses"
 import { parseFormResponse } from "@/lib/utils/utils"
-import { exportToCSV } from "@/lib/utils/tableUtils"
+import { exportToCSV, exportToPDF, handleBulkDelete } from "@/lib/utils/tableUtils"
 import { ParsedFormResponse } from "@/lib/type"
 import { Checkbox } from "@/components/ui/checkbox"
 import ResponseDetailsModal from "./ResponseDetailsModal"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const emptyArray: ParsedFormResponse[] = [];
  
 const ResponseTable = () => {
-    console.log('refreshed');
-
     const [selectedForm, setSelectedForm] = useState<number>(0);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState("");
@@ -86,23 +85,27 @@ const ResponseTable = () => {
         
     })
 
-    useEffect(() => {
-        console.log('Selected Form:', selectedForm);
-    }, [selectedForm]);
-
-    useEffect(() => {
-        console.log('Responses:', responses);
-    }, [responses]);
+    const handleBulkExport = useCallback((format: 'csv' | 'pdf') => {
+        const selectedRows = table.getSelectedRowModel().rows
+        const selectedData = selectedRows.map(row => row.original)
+        if (format === 'csv') {
+        exportToCSV(selectedData)
+        } else {
+        exportToPDF(selectedData)
+        }
+    }, [table])
 
 
     return (
         <div>
             {/* Form select */}
             <div className="flex items-center justify-between py-4 gap-4">
-                <Select onValueChange={handleFormSelect} value={selectedForm.toString()} >
-                <SelectTrigger className="w-96">
-                    <SelectValue placeholder="Form" />
+                <Select onValueChange={handleFormSelect} value={selectedForm.toString() || ""} >
+
+                <SelectTrigger className="w-1/3">
+                    <SelectValue placeholder="forms" />
                 </SelectTrigger>
+
                 <SelectContent>
                     {forms?.map((form) => {
                         const formTitle = JSON.parse(form.jsonform).formTitle
@@ -125,24 +128,31 @@ const ResponseTable = () => {
                 className="flex-grow"
             />
 
-            {/* Bulk action */}
-            <DropdownMenu>
+            <div className="flex gap-4"> 
+                {/* Bulk action */}
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto" disabled={Object.keys(rowSelection).length === 0}>
+                    <Button 
+                    variant="outline" 
+                    className="ml-auto" 
+                    disabled={!table.getIsSomeRowsSelected() && !table.getIsAllPageRowsSelected()}
+                    >
                     Bulk Actions
-                </Button>
+                    </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                <DropdownMenuItem onSelect={()=>{}}>Delete Selected</DropdownMenuItem>
-                <DropdownMenuItem onSelect={()=>{}}>Export Selected</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleBulkDelete(table.getSelectedRowModel().rows.map(row => row.original))}>
+                    Delete Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleBulkExport('csv')}>Export to CSV</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleBulkExport('pdf')}>Export to PDF</DropdownMenuItem>
                 </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenu>
 
-            {/* Column Visibility */}
-            <div className="flex gap-4"> 
+                {/* Column Visibility */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto w-28">
+                        <Button variant="outline" className="ml-auto w-32">
                         Columns
                         </Button>
                     </DropdownMenuTrigger>
@@ -170,7 +180,7 @@ const ResponseTable = () => {
                 </DropdownMenu>
 
                 {/* export button */}
-                <Button variant="outline" className="ml-auto w-28" onClick={() => exportToCSV(memoizedResponses)}> Export </Button>
+                <Button variant="outline" className="ml-auto w-32" onClick={() => exportToCSV(memoizedResponses)}> Export </Button>
             </div>
 
         </div>
@@ -206,13 +216,17 @@ const ResponseTable = () => {
                 </TableHeader>
                 
                 <TableBody>
-                { isFormsLoading || isResponsesLoading ? (
-                    <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                        Loading...
-                    </TableCell>
-                    </TableRow>
-                ) : table.getRowModel().rows?.length ? (
+                {isFormsLoading || isResponsesLoading ? (
+                            Array.from({ length: 4 }).map((_, index) => (
+                                <TableRow key={index}>
+                                    {Array.from({ length: columns.length  }).map((_, cellIndex) => (
+                                        <TableCell key={cellIndex}>
+                                            <Skeleton className="my-2 h-6 w-full rounded-md" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row) => (
                     <TableRow
                         key={row.id}
@@ -245,8 +259,8 @@ const ResponseTable = () => {
                     ))
                 ) : (
                     <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                        No results.
+                    <TableCell colSpan={columns.length} className="my-6 h-16 text-center">
+                        No responses found
                     </TableCell>
                     </TableRow>
                 )}

@@ -3,14 +3,22 @@ import React from 'react'
 import { useUser } from '@clerk/nextjs'
 import FormItem from './FormItem'
 import { useForms } from '@/app/hooks/useForms'
+import { Skeleton } from './ui/skeleton'
 
 
 const FormList = ({ query }: { query: string }) => {
     const { isLoaded, isSignedIn, user } = useUser()
     const { data: formList, isLoading, isError, error, refetch } = useForms()
 
-    if (!isLoaded || isLoading)
-        return <div>Loading...</div>
+    if (!isLoaded || isLoading) {
+        return (
+            <div className='mt-20 mx-auto 2xl:mx-56 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 sm: gap-6'>
+                {[...Array(6)].map((_, index) => (
+                    <Skeleton key={index} className="w-80 h-64" />
+                ))}
+            </div>
+        )
+    }
 
     if (!isSignedIn)
         return <div>Please sign in to view your forms.</div>

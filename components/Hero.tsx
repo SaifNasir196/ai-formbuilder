@@ -20,7 +20,7 @@ const Hero = () => {
                         <Link href="/sign-in">Get Started</Link>
                     </Button>
                     <Button variant="outline" className='py-6 px-8'>
-                        <Link href="/">Learn More</Link>
+                        <Link href="/learn-more">Learn More</Link>
                     </Button>
                 </div>
             </div>
