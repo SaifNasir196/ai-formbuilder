@@ -1,8 +1,18 @@
 import React from 'react'
 
+import { useTotalStats } from '../hooks/useForms'
+import FormStats from './FormStats'
+
 const page = () => {
+
+
   return (
-    <div>analytics</div>
+    <section className='px-20 py-20 flex flex-col items-center'>
+      {/* Total stats */}
+      <FormStats />
+
+    </section>
+
   )
 }
 

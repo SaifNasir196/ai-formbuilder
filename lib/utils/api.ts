@@ -1,5 +1,7 @@
 import axios, { AxiosError } from 'axios';
-import { Form, FormData, FormResponse } from '@/lib/type';
+import { Form, FormData, FormSubmission, ParsedFormSubmission } from '@/lib/type';
+import { BulkEmailParams } from '@/lib/type';
+import { parseFormSubmission } from './utils';
 
 const api = axios.create({
   baseURL: '/api',
@@ -29,22 +31,33 @@ export const formApi = {
   deleteForm: async (formId: number): Promise<void> => {
     await api.delete(`/forms/${formId}`);
   },
+
+  getTotalStats: async (): Promise<{ submissions: number; visits: number, submissionRate: number, bounceRate: number }> => {
+    const { data } = await api.get<{
+      submissions: number; visits: number, submissionRate: number, bounceRate: number
+    }>('/forms/stats');
+    return data;
+  },
+
+  getStats: async (formId: number): Promise<{ submissions: number; visits: number }> => {
+    const { data } = await api.get<{ submissions: number; visits: number }>(`/forms/${formId}/stats`);
+    return data;
+  },
 };
 
 export const responsesApi = {
-  getResponses: async (formId: number): Promise<FormResponse[]> => {
-    const { data } = await api.get<FormResponse[]>(`/responses?formId=${formId}`);
-    console.log('data', data);
+  getResponses: async (formId: number): Promise<FormSubmission[]> => {
+    const { data } = await api.get<FormSubmission[]>(`/responses?formId=${formId}`);
     return data;
   },
 
-  getResponse: async (responseId: number): Promise<FormResponse> => {
-    const { data } = await api.get<FormResponse>(`/responses/${responseId}`);
+  getResponse: async (responseId: number): Promise<FormSubmission> => {
+    const { data } = await api.get<FormSubmission>(`/responses/${responseId}`);
     return data;
   },
 
-  createResponse: async (formId: number, response: any): Promise<{ id: number }> => {
-    const { data } = await api.post<{ id: number }>('/responses', { formId, response });
+  createResponse: async (formId: number, submission: String): Promise<{ id: number }> => {
+    const { data } = await api.post<{ id: number }>('/responses', { formId, submission });
     return data;
   },
 
@@ -60,5 +73,12 @@ export const responsesApi = {
   getResponsesCount: async (formId: number): Promise<number> => {
     const { data } = await api.get<{ count: number }>(`/responses/count?formId=${formId}`);
     return data.count;
+  },
+};
+
+export const mailersendApi = {
+  sendBulkEmail: async (params: BulkEmailParams): Promise<any> => {
+    const { data } = await api.post('/mailersend', params);
+    return data;
   },
 };

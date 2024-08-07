@@ -3,10 +3,10 @@ import { FormData, editFieldType } from '@/lib/type'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import FieldOptions from './FieldOptions'
-import { createDynamicSchema, getDefaultValues } from '@/lib/utils/utils'
+import { createDynamicSchema, getDefaultValues, parseFormSubmission } from '@/lib/utils/utils'
 import { FieldValues, useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FormDataSchema } from '@/lib/data'
+import { FormSubmission } from '@/lib/type'
 import { Form } from "@/components/ui/form"
 import StringField from './Fields/StringField'
 import RadioField from './Fields/RadioField'
@@ -16,7 +16,8 @@ import SwitchField from './Fields/SwitchField'
 import { Button } from './ui/button'
 import { toast } from './ui/use-toast'
 import { useForm as useQueryForm } from '@/app/hooks/useForms'
-import { useCreateResponse } from '@/app/hooks/useResponses'
+import { useCreateSubmission } from '@/app/hooks/useResponses'
+import { FormSubmissionSchema } from '@/lib/data'
 
 const FormUI = ({
   formId,
@@ -28,7 +29,7 @@ const FormUI = ({
   onFieldDelete: (index: number) => void
 }) => {
   const { data: form, isLoading, isError } = useQueryForm(formId)
-  const createResponse = useCreateResponse()
+  const createResponse = useCreateSubmission()
 
   if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Error loading form</div>
@@ -42,10 +43,13 @@ const FormUI = ({
   });
 
   const onSubmit = async (values: FieldValues) => {
-    const isValid = await formObject.trigger(Object.keys(FormDataSchema.shape));
+    const isValid = await formObject.trigger(Object.keys(FormSubmissionSchema.shape));
     if (isValid) {
+      // test print
+      console.log(values);
+
       createResponse.mutate(
-        { formId, response: JSON.stringify(values) },
+        { formId, submission: JSON.stringify(values) },
         {
           onSuccess: () => {
             formObject.reset(defaultValues);
@@ -71,20 +75,19 @@ const FormUI = ({
     <article className='border p-5 rounded-2xl shadow-sm w-3/4 xl:w-1/2 h-fit'>
       <h2 className='font-bold text-center text-2xl text-primary'> {parsedForm.formTitle} </h2>
       <h3 className='text-sm text-gray-400 text-center'> {parsedForm.formHeading} </h3>
-      
+
       <Form {...formObject}>
         <form onSubmit={formObject.handleSubmit(onSubmit)}>
-          {
-            parsedForm.fields.map((field, index) => (
-              <React.Fragment key={index}>
+          {parsedForm.fields.map((field, index) => (
+            <React.Fragment key={index}>
               {
                 ['string', 'email', 'number', 'tel', 'url', 'date', 'time'].includes(field.fieldType) ? (
                   <StringField
-                    control={formObject.control} 
+                    control={formObject.control}
                     fieldData={field}
                     index={index}
                     onFieldUpdate={onFieldUpdate}
-                    onFieldDelete={()=> onFieldDelete(index)}
+                    onFieldDelete={() => onFieldDelete(index)}
                   />
                 ) : field.fieldType === 'radio' ? (
                   <RadioField
@@ -120,26 +123,25 @@ const FormUI = ({
                   />
                 ) : (
                   <div className='flex items-center  gap-2' key={index}>
-                    <div  className='my-5 flex-grow'>
+                    <div className='my-5 flex-grow'>
                       <Label htmlFor={field.fieldName}> {field.label} </Label>
-                      <Input 
-                        id={field.fieldName} 
-                        name={field.fieldName} 
-                        type={field.fieldType} 
-                        placeholder={field.placeholder} 
-                        required={field.required} 
+                      <Input
+                        id={field.fieldName}
+                        name={field.fieldName}
+                        type={field.fieldType}
+                        placeholder={field.placeholder}
+                        required={field.required}
                         className='w-full'
                       />
                     </div>
-                    <FieldOptions defaultValue={field} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={()=> onFieldDelete(index)}/>
+                    <FieldOptions defaultValue={field} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={() => onFieldDelete(index)} />
                   </div>
                 )
               }
-              </React.Fragment>
-            ))
-          }
+            </React.Fragment>
+          ))}
 
-        <Button className='w-full mt-16' type='submit'> Submit </Button>
+          <Button className='w-full mt-16' type='submit'> Submit </Button>
         </form>
       </Form>
     </article>

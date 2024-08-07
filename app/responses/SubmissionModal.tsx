@@ -1,12 +1,12 @@
 import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ParsedFormResponse } from "@/lib/type"
+import { ParsedFormSubmission } from "@/lib/type"
 
 interface ResponseDetailsModalProps {
   isOpen: boolean
   onClose: () => void
-  response: Partial<ParsedFormResponse>
+  response: Partial<ParsedFormSubmission>
 }
 
 const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({ isOpen, onClose, response }) => {

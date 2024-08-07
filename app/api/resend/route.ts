@@ -2,22 +2,16 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { renderAsync } from '@react-email/render';
-import FeedbackEmail from '@/components/FeedbackEmail';
+import FeedbackEmail from '@/components/Emails/FeedbackEmail';
 import { createElement } from 'react';
+import { FeedbackData } from '@/lib/type';
 
 if (!process.env.RESEND_API_KEY)
   throw new Error('RESEND_API_KEY is not set');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-interface FeedbackData {
-  name: string;
-  email: string;
-  company?: string;
-  source: string;
-  recommendation: string;
-  feedback: string;
-}
+
 
 export async function POST(request: Request) {
   const data: FeedbackData = await request.json();

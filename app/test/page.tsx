@@ -135,83 +135,83 @@ const formData = {
 }
 
 const Page = () => {
-    const formObj = useForm();
-    const {control} = formObj;
-
-  
-    const onFieldUpdate = (value: editFieldType, index: number) => {
-        console.log(`Field ${index} updated:`, value);
-      
-    };
+  const formObj = useForm();
+  const { control } = formObj;
 
 
-    const onFieldDelete = (index: number) => {
-        console.log(`Field ${index} deleted`);
-    };
+  const onFieldUpdate = (value: editFieldType, index: number) => {
+    console.log(`Field ${index} updated:`, value);
 
-    const renderField = (field: any, index: number) => {
-        switch (field.fieldType) {
-            case 'checkbox':
-                return <CheckBoxField 
-                    key={field.fieldName}
-                    control={control} 
-                    fieldData={field} 
-                    index={index} 
-                    onFieldUpdate={onFieldUpdate} 
-                    onFieldDelete={onFieldDelete} 
-                />
-            case 'radio':
-                return <RadioField 
-                    key={field.fieldName}
-                    control={control} 
-                    fieldData={field} 
-                    index={index} 
-                    onFieldUpdate={onFieldUpdate} 
-                    onFieldDelete={onFieldDelete} 
-                />
-            case 'select':
-                return <SelectField 
-                    key={field.fieldName}
-                    control={control} 
-                    fieldData={field} 
-                    index={index} 
-                    onFieldUpdate={onFieldUpdate} 
-                    onFieldDelete={onFieldDelete} 
-                />
-            case 'switch':
-                return <SwitchField 
-                    key={field.fieldName}
-                    control={control} 
-                    fieldData={field} 
-                    index={index} 
-                    onFieldUpdate={onFieldUpdate} 
-                    onFieldDelete={onFieldDelete} 
-                />
-            default:
-                return <StringField 
-                    key={field.fieldName}
-                    control={control} 
-                    fieldData={field} 
-                    index={index} 
-                    onFieldUpdate={onFieldUpdate} 
-                    onFieldDelete={onFieldDelete} 
-                />
-        }
+  };
+
+
+  const onFieldDelete = (index: number) => {
+    console.log(`Field ${index} deleted`);
+  };
+
+  const renderField = (field: any, index: number) => {
+    switch (field.fieldType) {
+      case 'checkbox':
+        return <CheckBoxField
+          key={field.fieldName}
+          control={control}
+          fieldData={field}
+          index={index}
+          onFieldUpdate={onFieldUpdate}
+          onFieldDelete={onFieldDelete}
+        />
+      case 'radio':
+        return <RadioField
+          key={field.fieldName}
+          control={control}
+          fieldData={field}
+          index={index}
+          onFieldUpdate={onFieldUpdate}
+          onFieldDelete={onFieldDelete}
+        />
+      case 'select':
+        return <SelectField
+          key={field.fieldName}
+          control={control}
+          fieldData={field}
+          index={index}
+          onFieldUpdate={onFieldUpdate}
+          onFieldDelete={onFieldDelete}
+        />
+      case 'switch':
+        return <SwitchField
+          key={field.fieldName}
+          control={control}
+          fieldData={field}
+          index={index}
+          onFieldUpdate={onFieldUpdate}
+          onFieldDelete={onFieldDelete}
+        />
+      default:
+        return <StringField
+          key={field.fieldName}
+          control={control}
+          fieldData={field}
+          index={index}
+          onFieldUpdate={onFieldUpdate}
+          onFieldDelete={onFieldDelete}
+        />
     }
+  }
 
-    return (
-        <div className='p-20'>
-            <h1>{formData.formTitle}</h1>
-            <p>{formData.formHeading}</p>
-            <Form {...formObj} >
+  return (
+    <div className='p-20'>
+      <h1>{formData.formTitle}</h1>
+      <p>{formData.formHeading}</p>
+      <Form {...formObj} >
 
-            <form onSubmit={formObj.handleSubmit((data) => console.log(data))}>
-                {formData.fields.map((field, index) => renderField(field, index))}
-                <button type="submit">Submit</button>
-            </form> 
-            </Form>
-        </div>
-    )
+        <form onSubmit={formObj.handleSubmit((data) => console.log(data))}>
+          {formData.fields.map((field, index) => renderField(field, index))}
+          <button type="submit">Submit</button>
+        </form>
+      </Form>
+    </div>
+  )
 }
 
 export default Page

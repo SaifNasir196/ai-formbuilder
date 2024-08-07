@@ -163,14 +163,19 @@ export const FieldSchema = z.object({
   options: z.array(optionSchema).optional()
 });
 
-
-
-
 // Define the structure of your form data
 export const FormDataSchema = z.object({
   formTitle: z.string(),
   formHeading: z.string(),
   fields: z.array(FieldSchema)
+});
+
+
+export const FormSubmissionSchema = z.object({
+    id: z.number(),
+    formId: z.number(),
+    submittedAt: z.date(),
+    submission: z.string()
 });
 
 

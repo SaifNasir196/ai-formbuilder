@@ -10,7 +10,7 @@
 
 import React from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Trash, Copy, CopyCheck, SquareArrowOutUpRight } from 'lucide-react'
+import { Trash, Copy, CopyCheck, SquareArrowOutUpRight, FileSearch2, Download } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FormUI from '@/components/FormUI'
 import { editFieldType, FormData } from '@/lib/type'
@@ -67,7 +67,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
       }
     });
   }
-const renderContent = () => {
+  const renderContent = () => {
     if (isLoading) {
       return (
         <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
@@ -104,7 +104,7 @@ const renderContent = () => {
 
     return (
       <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
-        <FormUI formId={params.formId} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete}/>
+        <FormUI formId={params.formId} onFieldUpdate={onFieldUpdate} onFieldDelete={onFieldDelete} />
       </div>
     )
   }
@@ -132,16 +132,25 @@ const renderContent = () => {
         </AlertDialog>
 
         <Link href={`/form/${params.formId}`}>
-          <Button variant="secondary"> <SquareArrowOutUpRight size={20} className='mr-2'/>Preview</Button>
+          <Button variant="secondary"> <FileSearch2 size={20} className='mr-2' />Preview</Button>
         </Link>
 
-        <Button className='w-28' onClick={() => copyToClipboard(process.env.NEXT_PUBLIC_URL + `/form/${params.formId}`)}>
+
+        {/* <Button className='w-28' onClick={() => copyToClipboard(process.env.NEXT_PUBLIC_URL + `/form/${params.formId}`)}>
           {isCopied ? (
             <><CopyCheck size={20} className='mr-2'/> Copied</> 
             ) : (
             <> <Copy size={20} className='mr-2'/> Copy </> 
           )}
-        </Button>
+        </Button> */}
+
+        {/* publish form */}
+        <Button variant="secondary"><SquareArrowOutUpRight size={20} className='mr-2' /> Publish</Button>
+
+        {/* save form */}
+        <Link href={`/form/${params.formId}`}>
+          <Button> <Download size={20} className='mr-2' />Save</Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

@@ -20,7 +20,7 @@ export const useForm = (formId: number) => {
 export const useCreateForm = () => {
   const queryClient = useQueryClient();
   return useMutation<{ id: number }, Error, { message: string; duplicated?: boolean }>({
-    mutationFn: ({ message, duplicated }) => formApi.createForm(message, duplicated),
+    mutationFn: ({ message, duplicated=false }) => formApi.createForm(message, duplicated),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forms'] });
     },
@@ -79,5 +79,21 @@ export const useDeleteForm = () => {
         queryClient.setQueryData(['forms'], context.previousForms);
       }
     },
+  });
+};
+
+
+export const useTotalStats = () => {
+  return useQuery<{ submissions: number; visits: number, submissionRate: number, bounceRate: number }, Error>({
+    queryKey: ['stats'],
+    queryFn: formApi.getTotalStats,
+  });
+};
+
+export const useStats = (formId: number) => {
+  return useQuery<{ submissions: number; visits: number }, Error>({
+    queryKey: ['stats', formId],
+    queryFn: () => formApi.getStats(formId),
+    enabled: !!formId,
   });
 };

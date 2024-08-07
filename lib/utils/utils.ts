@@ -1,9 +1,9 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { validations } from "@/lib/data";
-import { FormData, Field, FormResponse, ParsedFormResponse } from "@/lib/type";
+import { FormData, Field, FormSubmission, ParsedFormSubmission } from "@/lib/type";
 import { z } from "zod";
-import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -21,6 +21,7 @@ export const model = genAI.getGenerativeModel({
     responseMimeType: "application/json",
   },
 });
+
 // export const model = genAI.getGenerativeModel({ 
 //   model: "gemini-1.5-pro",
 //   generationConfig: {
@@ -90,7 +91,6 @@ export const model = genAI.getGenerativeModel({
 //     },
 //   },
 // });
-
 
 
 export const createDynamicSchema = (jsonData: FormData | undefined) => {
@@ -172,26 +172,23 @@ export const getDefaultValues = (form: FormData) => {
 }
 
 // Function to parse the response JSON
-export const parseFormResponse = (response: FormResponse): ParsedFormResponse => {
+export const parseFormSubmission = (submission: FormSubmission): ParsedFormSubmission => {
     try {
-        const parsedJson = JSON.parse(response.response)
+        const parsedJson = JSON.parse(submission.submission)
         return {
-            id: response.id,
-            formId: response.formId,
-            respondedAt: response.respondedAt.toString(),
-            firstName: parsedJson.firstName || 'N/A',
-            lastName: parsedJson.lastName || 'N/A',
-            email: parsedJson.email || 'N/A',
+          ...submission,
+          firstName: parsedJson.firstName || 'N/A',
+          lastName: parsedJson.lastName || 'N/A',
+          email: parsedJson.email || 'N/A',
         }
+
     } catch (error) {
         console.error('Error parsing response:', error);
         return {
-            id: response.id,
-            formId: response.formId,
-            respondedAt: response.respondedAt.toString(),
-            firstName: 'Error',
-            lastName: 'Error',
-            email: 'Error',
+          ...submission,
+          firstName: 'Error',
+          lastName: 'Error',
+          email: 'Error',
         }
     }
 }

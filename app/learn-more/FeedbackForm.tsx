@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast"
 
 export default function FeedbackForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [recommendationValue, setRecommendationValue] = useState([5])
+  const [recommendationValue, setRecommendationValue] = useState([8])
   const { toast } = useToast()
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -57,9 +57,9 @@ export default function FeedbackForm() {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto mt-8">
+    <Card className="max-w-2xl mx-auto mt-28 bg-transparent outline-none border-none w-2/3 shadow-none ">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">We'd Love Your Feedback!</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">We'd Love Your Feedback!</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -99,6 +99,7 @@ export default function FeedbackForm() {
               min={1}
               max={10}
               step={1}
+              
               value={recommendationValue}
               onValueChange={setRecommendationValue}
             />

@@ -17,8 +17,8 @@ import FieldOptions from '@/components/FieldOptions'
 import { Checkbox } from '../ui/checkbox'
 
 
-const CheckBoxField = ({ 
-    control,
+const CheckBoxField = ({
+  control,
   fieldData,
   index,
   onFieldUpdate,
@@ -32,50 +32,55 @@ const CheckBoxField = ({
 }) => {
   return (
     <FormField
-        control={control}
-        name={fieldData.fieldName}
-        render={() => (
+      control={control}
+      name={fieldData.fieldName}
+      render={() => (
         <div className='flex my-6'>
-        <FormItem>
+          <FormItem>
             <div className="mb-4">
-            <FormLabel>{fieldData.label}</FormLabel>
-            <FormDescription> Select all that apply </FormDescription>
+              <FormLabel>{fieldData.label}</FormLabel>
+              <FormDescription> Select all that apply </FormDescription>
             </div>
             {fieldData?.options?.map((option, optionIndex) => (
-            <FormField
+              <FormField
                 key={optionIndex}
                 control={control}
                 name={fieldData.fieldName}
                 render={({ field }) => {
-                return (
+                  const value = Array.isArray(field.value) ? field.value : [];
+                  return (
                     <FormItem
-                        key={optionIndex}
-                        className="flex flex-row items-center space-x-3 space-y-0"
+                      key={optionIndex}
+                      className="flex flex-row items-center space-x-3 space-y-0"
                     >
-                    <FormControl>
+                      <FormControl>
                         <Checkbox
-                            checked={field.value?.includes(option.label)}
-                            onCheckedChange={(checked) => {
-                                return checked
-                                ? field.onChange([...field.value || [], option.label])
-                                : field.onChange( field.value?.filter((value: string) => value !== option.label))
-                            }}
+                          checked={value.includes(option.label)}
+                          onCheckedChange={(checked) => {
+                            // return checked
+                            //   ? field.onChange([...field.value || [], option.label])
+                            //   : field.onChange(field.value?.filter((value: string) => value !== option.label))
+                            const updatedValue = checked
+                              ? [...value, option.label]
+                              : value.filter((val: string) => val !== option.label);
+                            field.onChange(updatedValue);
+                          }}
                         />
-                    </FormControl>
-                    <FormLabel className="font-normal">
+                      </FormControl>
+                      <FormLabel className="font-normal">
                         {option.label}
-                    </FormLabel>
+                      </FormLabel>
                     </FormItem>
-                )
+                  )
                 }}
-            />
+              />
             ))}
             <FormMessage />
-        </FormItem>
-        
-        <FieldOptions defaultValue={fieldData} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={()=> onFieldDelete(index)}/>
+          </FormItem>
+
+          <FieldOptions defaultValue={fieldData} onUpdate={(value) => onFieldUpdate(value, index)} onDelete={() => onFieldDelete(index)} />
         </div>
-        )}
+      )}
 
     />
   )

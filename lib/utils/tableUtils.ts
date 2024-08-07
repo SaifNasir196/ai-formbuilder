@@ -1,13 +1,13 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { ParsedFormResponse } from "@/lib/type"
+import { ParsedFormSubmission } from "@/lib/type"
 
-export const exportToCSV = (data: ParsedFormResponse[]) => {
+export const exportToCSV = (data: ParsedFormSubmission[]) => {
   const allKeys = Array.from(new Set(data.flatMap(obj => Object.keys(obj))));
   const header = allKeys.join(',');
   const rows = data.map(obj => 
     allKeys.map(key => {
-      let cell = obj[key as keyof ParsedFormResponse] || '';
+      let cell = obj[key as keyof ParsedFormSubmission] || '';
       cell = cell.toString().replace(/"/g, '""');
       if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
         cell = `"${cell}"`;
@@ -29,7 +29,7 @@ export const exportToCSV = (data: ParsedFormResponse[]) => {
   }
 };
 
-export const exportToPDF = (data: ParsedFormResponse[]) => {
+export const exportToPDF = (data: ParsedFormSubmission[]) => {
   const doc = new jsPDF()
   const tableColumn = Object.keys(data[0])
   const tableRows = data.map(item => Object.values(item))
@@ -45,7 +45,7 @@ export const exportToPDF = (data: ParsedFormResponse[]) => {
 };
 
 
-export const handleBulkDelete = (selectedRows: ParsedFormResponse[]) => {
+export const handleBulkDelete = (selectedRows: ParsedFormSubmission[]) => {
   console.log('Bulk delete', selectedRows)
   // Implement actual delete logic here
   // This might involve calling an API, updating state, etc.

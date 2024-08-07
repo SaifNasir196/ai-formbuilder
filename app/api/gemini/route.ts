@@ -10,7 +10,6 @@ export async function POST(request: Request) {
 
     const chat = model.startChat({ history: [] });
     const result = await chat.sendMessage("User prompt: " + message + PROMPT);
-    console.log('Response:', result.response.text());
     return NextResponse.json({ response: result.response.text() });
   } catch (error) {
     console.log('Error:', error);

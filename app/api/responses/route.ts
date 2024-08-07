@@ -1,38 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/config';
-import { responses, forms } from '@/config/schema';
-import { and, eq } from 'drizzle-orm';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { currentUser } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
-  const { userId } = auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await currentUser();
+  if (!user){
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
   const formId = request.nextUrl.searchParams.get('formId');
   if (!formId) {
-    return NextResponse.json({ error: 'Form ID is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing formId' }, { status: 400 });
   }
 
   try {
-    const user = await currentUser();
-    const userEmail = user?.primaryEmailAddress?.emailAddress;
+    const formSubmissions = await prisma.formSubmission.findMany({
+      where: {
+        formId: parseInt(formId),
+        form: {
+          userId: user?.id,
+        },
+      },
+    });
 
-    // Check if the user owns the form
-    const formOwnership = await db.select({ id: forms.id })
-      .from(forms)
-      .where(and(eq(forms.id, parseInt(formId)), eq(forms.createdBy, userEmail!)))
-      .limit(1);
-
-    if (formOwnership.length === 0) {
-      return NextResponse.json({ error: 'Unauthorized access to form' }, { status: 403 });
-    }
-
-    const formResponses = await db.select().from(responses)
-      .where(eq(responses.formId, parseInt(formId)));
-
-    return NextResponse.json(formResponses);
+    return NextResponse.json(formSubmissions);
   } catch (error) {
     console.error('Error fetching responses:', error);
     return NextResponse.json({ error: 'Failed to fetch responses' }, { status: 500 });
@@ -40,22 +31,39 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { userId } = auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await currentUser();
+  if (!user){
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
   try {
-    const { formId, response } = await request.json();
+    const { formId, submission } = await request.json();
 
-    const result = await db.insert(responses).values({
-      formId,
-      response: response,
-      respondedAt: new Date(),
-    }).returning({ id: responses.id });
+    console.log('formId:', formId);
+    console.log('response:', submission);
 
-    return NextResponse.json({ id: result[0].id }, { status: 201 });
+    // return NextResponse.json({ error: 'Form not found' }, { status: 404 });
+
+    const res = await prisma.formSubmission.create({ 
+      data: {
+        form: {
+          connect: {
+            id: parseInt(formId)
+          },
+        },
+        submission: submission,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return NextResponse.json({ id: res.id }, { status: 201 });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return NextResponse.json({ error: 'Form not found' }, { status: 404 });
+      }
+    }
     console.error('Error creating response:', error);
     return NextResponse.json({ error: 'Failed to create response' }, { status: 500 });
   }

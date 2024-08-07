@@ -1,6 +1,6 @@
 "use client"
 import FormList from '@/components/FormList'
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 
@@ -11,7 +11,7 @@ const page = () => {
     <section className='px-20 py-20 flex flex-col items-center'>
       {/* Search bar */}
       <div className='relative w-full md:w-1/3 max-w-4xl'>
-        <Search size={24} className='absolute left-3 top-3 text-gray-400'/>
+        <Search size={24} className='absolute left-3 top-3 text-gray-400' />
         <Input
           value={query}
           type='text'
@@ -20,7 +20,9 @@ const page = () => {
           onChange={e => setQuery(e.target.value)}
         />
       </div>
-      <FormList query={query}/>
+      <Suspense fallback={<div>Loading...</div>}>
+        <FormList query={query} />
+      </Suspense>
     </section>
   )
 }
