@@ -22,19 +22,22 @@ import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { useCreateForm } from '@/app/hooks/useForms'
+import { useQueryClient } from '@tanstack/react-query'
 
 const CreateForm = () => {
   const { mutate, isPending } = useCreateForm();
   const ref = useRef<HTMLTextAreaElement>(null)
   const router = useRouter();
   const closeRef = useRef<HTMLButtonElement>(null)
+  const queryClient = useQueryClient();
 
   const handleSubmit = () => {
     if (ref.current?.value) {
       mutate({ message: ref.current.value }, {
         onSuccess: (data) => {
           closeRef.current?.click();
-          router.push(`/edit-form/${data.id}`);
+          router.push(`/builder/${data.id}`);
+          queryClient.invalidateQueries({ queryKey: ['forms'] });
         }
       });
     }

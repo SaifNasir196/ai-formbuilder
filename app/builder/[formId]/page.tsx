@@ -40,11 +40,12 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
   const updateForm = useUpdateForm()
   const deleteForm = useDeleteForm()
 
+
+
+
   const onFieldUpdate = (value: editFieldType, index: number) => {
     if (!form?.jsonform) return;
     const jsonform = JSON.parse(form.jsonform) as FormData;
-    if (!jsonform?.fields[index].label)
-      throw new Error('Field label is missing')
 
     const updatedJsonform = { ...jsonform };
     updatedJsonform.fields[index].label = value.label;
@@ -67,6 +68,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
       }
     });
   }
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -94,6 +96,14 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
       )
     }
 
+    if (!form || form.published) {
+      return (
+        <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
+          <h1 className='text-center text-primary text-2xl font-semibold'>Form not found</h1>
+        </div>
+      )
+    }
+
     if (!form?.jsonform) {
       return (
         <div className="md:col-span-3 border rounded-lg px-10 pt-44 pb-44 min-h-screen shadow-md flex justify-center">
@@ -111,7 +121,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
 
   return (
     <section className='p-10'>
-      <div className="flex gap-3 justify-end my-3">
+      <div className="flex gap-2 justify-end my-4 border rounded-lg shadow- p-2">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive"><Trash size={18} /></Button>
@@ -153,7 +163,7 @@ const EditForm = ({ params }: { params: { formId: number } }) => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-1 border rounded-lg p-4 shadow-md">
           {isLoading ? <Skeleton className="w-full h-20" /> : "Controller"}
         </div>

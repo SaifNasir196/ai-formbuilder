@@ -4,26 +4,26 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { Field, editFieldType  } from '@/lib/type'
+import { Field, editFieldType } from '@/lib/type'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
 import { usePathname } from 'next/navigation'
 
-const FieldOptions = ({ 
+const FieldOptions = ({
     defaultValue,
     onUpdate,
     onDelete
-}:{ 
+}: {
     defaultValue: Field,
     onUpdate: (value: editFieldType) => void,
     onDelete: () => void,
@@ -34,84 +34,88 @@ const FieldOptions = ({
     const path = usePathname()
 
     return (
-        path.includes('/edit-form') ? (
-        <div className="mt-7 flex gap-1">
-            <Popover>
-                <PopoverTrigger>
-                    <Edit className='h-5 w-5 text-gray-500'/>
-                    
-                </PopoverTrigger>
-                <PopoverContent>
-                    <h2>Edit Fields</h2>
-                    <div className="">
-                        <Label>Label name </Label>
-                        <Input
-                            type='text'
-                            ref={label}
-                            placeholder='Enter Label' 
-                            defaultValue={defaultValue.label}
-                            required={true} 
-                            className='w-full '
-                        />
-                    </div>
-                    <div className="">
-                        <Label> Placeholder </Label>
-                        <Input 
-                            type='text'
-                            ref={placeholder}
-                            placeholder='Enter Label' 
-                            defaultValue={defaultValue.placeholder}
-                            required={true} 
-                            className='w-full '
-                        />
-                    </div>
-                    <Button
-                        className='mt-2'
-                        onClick={() => {
-                            onUpdate({
-                                label: label.current?.value || '',
-                                placeholder: placeholder.current?.value || ''
-                            })
-                            toast({
-                                title: "Field Updated Successfully",
-                                variant: 'success'
-                            })
-                        }}
-                    >
-                        Update
-                    </Button>
+        path.includes('/builder') && (
+            <div className="mt-7 flex gap-1">
+                <Popover>
+                    <PopoverTrigger>
+                        <Edit className='h-5 w-5 text-gray-500' />
+
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        <h2>Edit Fields</h2>
+                        <div className="">
+                            <Label>Label name </Label>
+                            <Input
+                                type='text'
+                                ref={label}
+                                placeholder='Enter Label'
+                                defaultValue={defaultValue.label}
+                                required={true}
+                                className='w-full '
+                            />
+                        </div>
+                        <div className="">
+                            <Label> Placeholder </Label>
+                            <Input
+                                type='text'
+                                ref={placeholder}
+                                placeholder='Enter placeholder'
+                                defaultValue={defaultValue.placeholder}
+                                required={true}
+                                className='w-full '
+                            />
+                        </div>
+                        <Button
+                            className='mt-2'
+                            onClick={() => {
+                                if (!label.current?.value || !placeholder.current?.value) {
+                                    toast({
+                                        title: "Please fill all the fields",
+                                        variant: 'warning'
+                                    })
+                                    return
+                                }
+                                onUpdate({
+                                    label: label.current?.value || '',
+                                    placeholder: placeholder.current?.value || ''
+                                })
+                                toast({
+                                    title: "Field Updated Successfully",
+                                    variant: 'success'
+                                })
+                            }}
+                        >
+                            Update
+                        </Button>
                     </PopoverContent>
                 </Popover>
 
 
                 <AlertDialog>
-                <AlertDialogTrigger>
-                    <Trash className='h-5 w-5 text-red-500'/>
-                </AlertDialogTrigger>
+                    <AlertDialogTrigger>
+                        <Trash className='h-5 w-5 text-red-500' />
+                    </AlertDialogTrigger>
 
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your form and all its data.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => {
-                        toast({
-                            title: "Field Deleted Successfully",
-                            variant: 'destructive'
-                        })
-                        onDelete()
-                        }}>Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your form and all its data.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {
+                                toast({
+                                    title: "Field Deleted Successfully",
+                                    variant: 'destructive'
+                                })
+                                onDelete()
+                            }}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
                 </AlertDialog>
-
-        </div>
-        ) : (
-            <div className=""></div>
+            </div>
         )
     )
 

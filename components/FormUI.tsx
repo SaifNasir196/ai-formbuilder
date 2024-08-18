@@ -18,6 +18,7 @@ import { toast } from './ui/use-toast'
 import { useForm as useQueryForm } from '@/app/hooks/useForms'
 import { useCreateSubmission } from '@/app/hooks/useResponses'
 import { FormSubmissionSchema } from '@/lib/data'
+import { usePathname } from 'next/navigation'
 
 const FormUI = ({
   formId,
@@ -30,6 +31,8 @@ const FormUI = ({
 }) => {
   const { data: form, isLoading, isError } = useQueryForm(formId)
   const createResponse = useCreateSubmission()
+  const path = usePathname()
+
 
   if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Error loading form</div>
@@ -45,9 +48,6 @@ const FormUI = ({
   const onSubmit = async (values: FieldValues) => {
     const isValid = await formObject.trigger(Object.keys(FormSubmissionSchema.shape));
     if (isValid) {
-      // test print
-      console.log(values);
-
       createResponse.mutate(
         { formId, submission: JSON.stringify(values) },
         {
@@ -141,7 +141,7 @@ const FormUI = ({
             </React.Fragment>
           ))}
 
-          <Button className='w-full mt-16' type='submit'> Submit </Button>
+          <Button className='w-full mt-16' type='submit' disabled={path.includes('/builder')}> Submit </Button>
         </form>
       </Form>
     </article>

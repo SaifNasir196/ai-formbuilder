@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
+
 export async function GET(request: NextRequest) {
   const user = await currentUser();
   if (!user){
@@ -51,8 +52,8 @@ export async function POST(request: NextRequest) {
         throw new Error('Network response was not ok');
 
       // parse response
-      data = await response.json();
-      data = data?.response;
+      data = await response.json(); // form data 
+      data = data?.response; // form data stringified
       
     } else {
       // only get the jsonform of the existing form
@@ -65,17 +66,13 @@ export async function POST(request: NextRequest) {
           jsonform: true,
         }
       });
-      console.log('data:', data);
+      data = data?.jsonform;
     }
 
-    // rename title  (temp solution)
-    const dataObj = data && JSON.parse(data);
-    dataObj.title = dataObj.title + ' - Copy';
     // insert form into database
-
     const res = await prisma.form.create({
       data: {
-        jsonform: JSON.stringify(dataObj),
+        jsonform: data,
         userId: user?.id,
       },
       select: {

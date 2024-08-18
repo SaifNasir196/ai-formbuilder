@@ -43,6 +43,7 @@ const FormItem = ({
     form: Form,
     refreshData: () => void
 }) => {
+
     const [isOpen, setIsOpen] = useState(false)
     const [duplicate, setDuplicate] = useState(false)
     const [preview, setPreview] = useState(false)
@@ -80,7 +81,7 @@ const FormItem = ({
                                 </DropdownMenuItem>
                             ) : (
                                 <DropdownMenuItem asChild>
-                                    <Link href={`/edit-form/${form.id}`}>Edit</Link>
+                                    <Link href={`/builder/${form.id}`}>Edit</Link>
                                 </DropdownMenuItem>
                             )}
                             <DropdownMenuItem asChild>

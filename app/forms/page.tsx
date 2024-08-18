@@ -20,9 +20,7 @@ const page = () => {
           onChange={e => setQuery(e.target.value)}
         />
       </div>
-      <Suspense fallback={<div>Loading...</div>}>
-        <FormList query={query} />
-      </Suspense>
+      <FormList query={query} />
     </section>
   )
 }
